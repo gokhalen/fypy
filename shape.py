@@ -11,9 +11,19 @@ parent domain, they are cached
 """
 
 import functools
+import typing
+
+from typing import List,Tuple
+
+TF1 = Tuple[float]
+TF2 = Tuple[float,float]
+TF3 = Tuple[float,float,float]
+
+TF4 = Tuple[float,float,float,float]
+TF8 = Tuple[float,float,float,float,float,float,float,float]
 
 @functools.lru_cache
-def shape1d(xi):
+def shape1d(xi:TF1) -> TF2:
     '''
     1D linear shape function
     '''
@@ -23,13 +33,25 @@ def shape1d(xi):
 
 
 @functools.lru_cache
-def shape1d_der(xi):
+def shape1d_der(xi:TF1)-> TF2:
+    '''
+    1D linear shape function derivatives
+    '''
     return (-0.5,0.5)
 
 @functools.lru_cache
-def shape2d(xi,eta):
+def shape2d(xi:TF2)->TF4:
+    print('hello')
     pass
 
 @functools.lru_cache
-def shape2d_der(xi,eta):
+def shape2d_der(xi:TF2):
+    pass
+
+@functools.lru_cache
+def shape3d(xi:TF3):
+    pass
+
+@functools.lru_cache
+def shape3d_der(xi:TF3):
     pass
