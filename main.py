@@ -5,7 +5,6 @@ Created on Fri Jul 17 19:31:21 2020
 @author: aa
 """
 
-#works
-from src import utils,shape
-# works
-#from src.shape import shape1d
+
+from src.shape import *
+from src.utils import *
