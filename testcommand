@@ -1,0 +1,3 @@
+python -m unittest discover
+
+Execute this in a directory above the package level
