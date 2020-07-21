@@ -11,8 +11,6 @@ parent domain, they are cached
 """
 
 import functools
-import typing
-
 from typing import List,Tuple
 
 TF1 = Tuple[float]

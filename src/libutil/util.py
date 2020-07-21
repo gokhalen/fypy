@@ -9,20 +9,38 @@ defines basic classes Point,ParentPoint
 """
 
 from typing import Tuple
-
+import numpy as np
+import math
 
 class Point(object):
     '''
     A basic Point class in n-dimensional space
     '''
     def __init__(self,coord:Tuple[float,...]):
-        self._x = list(coord)
+        self._x = np.array(coord)
         
     def __getitem__(self,i:int):
         return self._x[i]
     
     def __setitem__(self,i:int,value:float):
         self._x[i] = value
+
+    def __len__(self):
+        return len(self._x)
+
+    @property
+    def x(self):
+        return self._x
+
+    @x.setter
+    def x(self,value):
+        self._x = value
+
+#   https://stackoverflow.com/a/33533514/13560598
+#   Also, see notes
+
+    def distance(self,P1:'Point')->float:
+        return math.sqrt(sum((self.x - P1.x)**2.0)) 
 
         
 class ParentPoint(Point):
