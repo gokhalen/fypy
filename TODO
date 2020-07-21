@@ -1,2 +1,2 @@
-1) 2D and 3D shapefunctions and their derivatives
-2) Unittests for shapefunctions
+1) 2D shapefunctions and their derivatives, jacobians, and unittests for both
+2) unittest for 1d jacobian

@@ -1,3 +1,0 @@
-python -m -v unittest discover 
-
-Execute this in the fypy directory
