@@ -12,15 +12,16 @@ returns tuple(points,weights)
 from scipy.special import roots_legendre
 import itertools,functools
 
-# n is number of Gauss-Legendre integration points
+# npoints is number of Gauss-Legendre integration points
 
-def gauss1d(n):
-    points,weights = roots_legendre(n)
+def gauss1d(npoints):
+    # points and weights are np arrays, convert them into tuple
+    points,weights = roots_legendre(npoints)
     return (tuple(points),tuple(weights))
 
 
-def gauss2d(n):
-    p1d,w1d = gauss1d(n)
+def gauss2d(npoints):
+    p1d,w1d = gauss1d(npoints)
     points  = tuple(itertools.product(p1d,p1d))
 #   can also do 
 #   weights = tuple(map(lambda x: x[0]*x[1], itertools.product(px,px)))
@@ -28,17 +29,14 @@ def gauss2d(n):
     return (points,weights)     
 
 
-def gauss3d(n):
-    p1d,w1d = gauss1d(n)
+def gauss3d(npoints):
+    p1d,w1d = gauss1d(npoints)
     points  = tuple(itertools.product(p1d,repeat=3))
     weights = tuple(w1*w2*w3 for w1,w2,w3 in itertools.product(w1d,repeat=3))
     return (points,weights) 
 
 def gaussnd(ndim,npoints):
     p1d,w1d = gauss1d(npoints)
-    
-    if (ndim == 1): return (tuple(p1d),tuple(w1d))
-    
     points  = tuple(itertools.product(p1d,repeat=ndim))
     it      = itertools.product(w1d,repeat=ndim) 
    
@@ -67,8 +65,8 @@ def getgauss(ndim,npoints):
     elif (ndim == 3):
         return gauss3d(npoints)
     else:
-        return gaussnd(npoints)
+        return gaussnd(ndim,npoints)
 
-#assert (gaussnd(ndim=3,npoints=3)==gauss3d(3)), 'gauss3d & gaussnd are inconsistent'
-#assert (gaussnd(ndim=2,npoints=3)==gauss2d(3)), 'gauss2d & gaussnd are inconsistent'
-#assert (gaussnd(ndim=1,npoints=3)==gauss1d(3)), 'gauss1d & gaussnd are inconsistent'
+assert (gaussnd(ndim=3,npoints=3)==gauss3d(3)), 'gauss3d & gaussnd are inconsistent'
+assert (gaussnd(ndim=2,npoints=3)==gauss2d(3)), 'gauss2d & gaussnd are inconsistent'
+assert (gaussnd(ndim=1,npoints=3)==gauss1d(3)), 'gauss1d & gaussnd are inconsistent'

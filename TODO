@@ -1,2 +1,4 @@
-1) 2D shapefunctions and their derivatives, jacobians, and unittests for both
+1) 2D,3D shapefunctions and their derivatives, jacobians, and unittests for both
 2) unittest for 1d jacobian
+3) Tests for Gauss Points
+4) Vectorize shape functions
