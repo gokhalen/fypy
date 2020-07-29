@@ -2,24 +2,50 @@ import unittest
 import numpy as np
 import math
 import functools
+import itertools
 
-from typing import Callable
+from typing import Callable,Any
 from ..libinteg.gausslegendre import gauss1d,gauss2d,gauss3d,gaussnd
 
 closetol = 1e-12
 
 npclose=functools.partial(np.allclose,atol=closetol)
 
+
 class TestLibInteg(unittest.TestCase):
     # consistency tests between gaussnd and gauss1d,gauss2d,gauss3d routines
     # gaussnd uses gauss1d, so results should be exactly equal.
+
+
+    def compare_gaussnd(self,ndime:int,npoints:int)->Any:
+        # anything in Python can be used as a boolean if it implements the __bool__ method
+        # fgauss: either gauss1d,gauss2d,gauss3d that can be compared against gaussnd
+        # nfunc: which gauss function to be called (1,2 or 3)
+        msg     = f'gauss{ndime}d does not match gaussnd for {npoints} integration points'
+        pt,wt   = eval(f'gauss{ndime}d(npoints)')
+        ptn,wtn = gaussnd(ndime,npoints)
+
+        boolpt  = np.allclose(ptn,pt,atol=closetol)
+        boolwt  = np.allclose(wtn,wt,atol=closetol)
+
+        if ( not boolpt ):
+            # call function to determine which entry is off
+            pass
+
+        if ( not boolwt ):
+            # call function to determine which entry is off
+            pass
+
+        self.assertTrue(boolpt and boolwt,msg=msg)
+        
+
     def test_integration_consistency(self):
-        for npoints in range(1,10):
-            self.assertEqual(gauss1d(npoints),gaussnd(ndim=1,npoints=npoints),msg='gauss1d consistency failure')
-            self.assertEqual(gauss2d(npoints),gaussnd(ndim=2,npoints=npoints),msg='gauss2d consistency failure')
-            self.assertEqual(gauss3d(npoints),gaussnd(ndim=3,npoints=npoints),msg='gauss3d consistency failure')
-    
-    
+        print('Comparing consisteny of gaussnd and gauss1d,gauss2d,gauss3d...')
+        for idime,ipoint in itertools.product(range(1,4),range(1,11)):
+            self.compare_gaussnd(idime,ipoint)
+            
+        self.assertTrue(True)
+            
     def compare_hughes(self,npoints,ftest:Callable,ptsh,wtsh):
         '''
         npoints: number of points to use for integration in each direction

@@ -14,6 +14,7 @@ only element class is initialized
 
 import functools
 from typing import List,Tuple
+from collections import namedtuple
 
 TF1  = Tuple[float]
 TF2  = Tuple[float,float]
@@ -32,6 +33,8 @@ TOUT = Tuple[TSH,TDER]
 TF4 = Tuple[float,float,float,float]
 TF8 = Tuple[float,float,float,float,float,float,float,float]
 
+Shape=namedtuple('Shape',['shape','der'])
+
 def shape1d(xi:TF1) -> TOUT:
     '''
     1D linear shape function and parent domain derivatives
@@ -41,7 +44,7 @@ def shape1d(xi:TF1) -> TOUT:
     
     shape = (N1,N2)
     der   = ((-0.5,),(+0.5,))
-    return (shape,der)
+    return Shape(shape=shape,der=der)
 
 
 def shape2d(xi:TF2)->TOUT:
@@ -73,15 +76,9 @@ def shape2d(xi:TF2)->TOUT:
     
     der = (D1,D2,D3,D4)
        
-    return (shape,der)
+    return Shape(shape=shape,der=der)
     
     
-
-
-@functools.lru_cache
 def shape3d(xi:TF3):
     pass
 
-@functools.lru_cache
-def shape3d_der(xi:TF3):
-    pass

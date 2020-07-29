@@ -31,8 +31,8 @@ class TestLibShape(unittest.TestCase):
             # boolean arrays with True when actual == expected 
             shclose          = np.isclose(ash,exsh,atol=closetol)
             dclose           = np.isclose(ad,exd,atol=closetol)
-            # should not have any False elements
-            shfalse = 
+            # shclose should not have any False elements
+            
     
     def test_shape1d(self):
         # points for which the testing is to be performed
