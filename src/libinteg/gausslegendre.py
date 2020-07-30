@@ -34,7 +34,8 @@ def gauss2d(npoints):
     p1d,w1d = gauss1d(npoints)
     # p1d is an array of arrays. need to be careful passing it to itertools.product
     # result will be array of tuples of arrays, which is not what we want
-    tt=tuple([d for d in p1d.reshape(npoints)])
+    # try tuple(p1d.ravel())
+    tt=tuple(p1d.ravel())
     it      = map(np.asarray,itertools.product(tt,tt))
     points  = np.asarray((*it,))
     
@@ -45,6 +46,7 @@ def gauss2d(npoints):
 
 def gauss3d(npoints):
     p1d,w1d = gauss1d(npoints)
+    p1d     = tuple(p1d.ravel())
     it      = map(np.asarray,itertools.product(p1d,repeat=3))
     points  = np.asarray((*it,))
 
@@ -54,6 +56,7 @@ def gauss3d(npoints):
 
 def gaussnd(ndim,npoints):
     p1d,w1d = gauss1d(npoints)
+    p1d     = p1d.ravel()
     # compute cartesian product of p1d. we first create arrays of integration points
     # and then an array of those arrays
     it      = map(np.asarray,itertools.product(p1d,repeat=ndim))
@@ -81,9 +84,3 @@ def getgauss(ndim,npoints):
         return gauss3d(npoints)
     else:
         return gaussnd(ndim,npoints)
-
-    
-#assert (gaussnd(ndim=3,npoints=3)==gauss3d(3)), 'gauss3d & gaussnd are inconsistent'
-#assert (gaussnd(ndim=2,npoints=3)==gauss2d(3)), 'gauss2d & gaussnd are inconsistent'
-#assert (np.allclose(gaussnd(ndim=1,npoints=3).wts,gauss1d(3).wts)), 'gauss1d & gaussnd are inconsistent'
-#assert (np.allclose(gaussnd(ndim=1,npoints=3).pts,gauss1d(3).pts)), 'gauss1d & gaussnd are inconsistent'

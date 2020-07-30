@@ -67,3 +67,23 @@ class ParentPoint(Point):
                      
         super(ParentPoint,self).__setitem__(i,value)
                      
+
+
+def get_mismatch(aa,bb,closetol=1E-12):
+   # if entries of aa and bb are off by an amount greater than closetol
+   # then the indices and values of those entries are returned
+   # if no entries are mismatched, empties are returned
+   idx       = np.where(abs(aa-bb)>closetol)
+   idxtuple  = tuple([ *zip(*idx)])
+   valuesa   = aa[idx]
+   valuesb   = bb[idx]
+   return (idxtuple,valuesa,valuesb)
+
+def make_mismatch_message(idxtuple,aa,bb):
+    # makes a string showing the locations and values that do not match
+    # to be used with: get_mismatch
+    msg='Entries do not match: '
+    for ii,(idx,va,vb) in enumerate(zip(idxtuple,aa,bb)):
+         msg = msg + "at location " + str(idx) + " (" + str(aa[ii]) + " != " + str(bb[ii]) + ") "
+    return msg       
+    
