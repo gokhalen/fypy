@@ -7,15 +7,12 @@ import itertools
 from typing import Callable,Any,Union
 from ..libinteg.gausslegendre import gauss1d,gauss2d,gauss3d,gaussnd
 from ..libutil.util import get_mismatch,make_mismatch_message
-
-closetol = 1e-12
-npclose=functools.partial(np.allclose,atol=closetol)
+from .test import closetol,npclose
 
 
 class TestLibInteg(unittest.TestCase):
     # consistency tests between gaussnd and gauss1d,gauss2d,gauss3d routines
     # gaussnd uses gauss1d, so results should be exactly equal.
-
     
     def compare_gaussnd(self,ndime:int,npoints:int,ptn=None,wtn=None,data_supplied=False)->Union[None,AssertionError]:
         # this method returns either None or an raises an AssertionError.
@@ -53,7 +50,6 @@ class TestLibInteg(unittest.TestCase):
             
         self.assertTrue(boolpt,msg=msg+msgpt)
         self.assertTrue(boolwt,msg=msg+msgwt)
-
 
     def test_integration_consistency(self):
         ngauss,npoint=3,10

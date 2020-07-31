@@ -12,7 +12,7 @@ only element class is initialized
 
 """
 
-import functools
+import functools, numpy as np
 from typing import List,Tuple
 from collections import namedtuple
 
@@ -22,32 +22,22 @@ TF3  = Tuple[float,float,float]
 # Generic tuple type containing arbitrary tuples
 TGEN = Tuple[float,...]
 
-# TSH = Tuple of shape functions. e.g. (N1,N2,..)
-TSH  = TGEN
 # TDER = Tuple of Tuples e.g. ((N1_x,N1_y),(N2_x,N2_y)...)
-TDER = Tuple[TGEN,...]
-TOUT = Tuple[TSH,TDER]
+Shape = namedtuple('Shape',['shape','der'])
 
 
-
-TF4 = Tuple[float,float,float,float]
-TF8 = Tuple[float,float,float,float,float,float,float,float]
-
-Shape=namedtuple('Shape',['shape','der'])
-
-def shape1d(xi:TF1) -> TOUT:
+def shape1d(xi:TF1) -> Shape:
     '''
     1D linear shape function and parent domain derivatives
     '''
     N1 = (1.0/2.0)*(1-xi[0])
     N2 = (1.0/2.0)*(1+xi[0])
     
-    shape = (N1,N2)
-    der   = ((-0.5,),(+0.5,))
+    shape = np.asarray((N1,N2))
+    der   = np.asarray(((-0.5,),(+0.5,)))
     return Shape(shape=shape,der=der)
 
-
-def shape2d(xi:TF2)->TOUT:
+def shape2d(xi:TF2)->Shape:
     '''
     these shape functions can be made faster by computing quantities
     like (1-x[1]) once and storing them
@@ -57,7 +47,7 @@ def shape2d(xi:TF2)->TOUT:
     N3 = (1.0/4.0)*(1+xi[0])*(1+xi[1])
     N4 = (1.0/4.0)*(1-xi[0])*(1+xi[1])
     
-    shape = (N1,N2,N3,N4)
+    shape = np.asarray((N1,N2,N3,N4))
     
     # dij = derivative of the ith shape function in the jth direction
     d11  = -(1.0/4.0)*(1-xi[1]) 
@@ -74,10 +64,9 @@ def shape2d(xi:TF2)->TOUT:
     D3 = (d31,d32)
     D4 = (d41,d42)
     
-    der = (D1,D2,D3,D4)
+    der = np.asarray((D1,D2,D3,D4))
        
     return Shape(shape=shape,der=der)
-    
     
 def shape3d(xi:TF3):
     pass
