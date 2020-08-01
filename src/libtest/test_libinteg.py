@@ -1,16 +1,10 @@
-import unittest
-import numpy as np
-import math
-import functools
-import itertools
-
+import unittest,numpy as np,math,functools,itertools
 from typing import Callable,Any,Union
 from ..libinteg.gausslegendre import gauss1d,gauss2d,gauss3d,gaussnd
-from ..libutil.util import get_mismatch,make_mismatch_message
-from .test import closetol,npclose
+from .test import *
 
 
-class TestLibInteg(unittest.TestCase):
+class TestLibInteg(TestFyPy):
     # consistency tests between gaussnd and gauss1d,gauss2d,gauss3d routines
     # gaussnd uses gauss1d, so results should be exactly equal.
     
@@ -56,8 +50,14 @@ class TestLibInteg(unittest.TestCase):
         print(f'Comparing consisteny of gaussnd and gauss1d,gauss2d,gauss3d for {npoint} integration points')
         for idime,ipoint in itertools.product(range(1,ngauss+1),range(1,npoint+1)):
             self.compare_gaussnd(idime,ipoint)
-            
-        self.assertTrue(True)
+
+        datamsg  = ['Integration points ', 'Weights ' ]
+
+        for idime in range(1,4):
+            fargs    = tuple([(i,) for i in range(1,npoint+1)])
+            frefargs = tuple([(idime,i) for i in range(1,npoint+1)])
+            ftest    = eval(f'gauss{idime}d')
+            self.compare_test_data(ftest,fargs,gaussnd,frefargs,None,datamsg,data_supplied=False,optmsg=f'Testing gauss{idime}d consistency ')
             
     def compare_hughes(self,npoints,ftest:Callable,ptsh,wtsh):
         '''

@@ -3,10 +3,10 @@ import numpy as np
 
 from typing import Callable,Iterable,Union
 from ..libshape.shape import *
-from .test import closetol,npclose
+from .test import *
 from ..libutil.util import *
 
-class TestLibShape(unittest.TestCase):
+class TestLibShape(TestFyPy):
 
     # tests for shape1d and shape2d .
     # input for both is a point represented by a tuple of floats
@@ -33,7 +33,7 @@ class TestLibShape(unittest.TestCase):
 
             if ( not boolder ):
                 print(f'{act=}',f'{exp=}')
-                idx,aa,bb = get_mismatch(act.der,exp.der,closetol=closetol)
+                idx,aa,bb  = get_mismatch(act.der,exp.der,closetol=closetol)
                 msgder    += make_mismatch_message(idx,aa,bb) + f'for {i}th entry in testing data'
                 pass
             
@@ -63,7 +63,7 @@ class TestLibShape(unittest.TestCase):
         der=np.asarray(der)
 
         # sanity test - should produce error in [3][1] component of der
-        der[3][1][0] +=1
+        # der[3][1][0] +=1
 
         # or equivalently, with broadcasting
         # der = ((-0.5,),(0.5,))
@@ -75,6 +75,16 @@ class TestLibShape(unittest.TestCase):
         *exout,=map(Shape,shp,der)
 
         self.compare_shape(shape1d,pts,exout)
+
+        # sanity test - should produce error in [2][1] shape function
+        # shp[2][1] += 1
+        
+        # sanity test - should produce error in [3][1] component of der
+        der[3][1][0] +=1
+        datamsg =  [" Shape Functions ", " Shapefunction Derivatives "]
+        ptst    =  tuple([ (tt,) for tt in pts ])
+        # ptst is a tuple of tuple of arguments to shape1d. Each tuple when unpacked yields the right argument  
+        # self.compare_test_data(shape1d,ptst,None,None,exout,datamsg,data_supplied=True,optmsg="Testing 1D Shape Functions ")
 
         
 
