@@ -53,7 +53,6 @@ class TestFyPy(unittest.TestCase):
          if ( not data_supplied ):
             _truedata = _fref(*_frefargs)
 
-         #print(_fargs)    
          _actualdata=_ftest(*_fargs)
          # now iterate over the reference data  and actualdata
          for _j,(_td,_ad,_dmsg) in enumerate(zip(_truedata,_actualdata,datamsg)):
