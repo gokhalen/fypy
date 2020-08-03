@@ -80,11 +80,11 @@ class TestLibShape(TestFyPy):
         # shp[2][1] += 1
         
         # sanity test - should produce error in [3][1] component of der
-        der[3][1][0] +=1
+        # der[3][1][0] +=1
         datamsg =  [" Shape Functions ", " Shapefunction Derivatives "]
         ptst    =  tuple([ (tt,) for tt in pts ])
         # ptst is a tuple of tuple of arguments to shape1d. Each tuple when unpacked yields the right argument  
-        # self.compare_test_data(shape1d,ptst,None,None,exout,datamsg,data_supplied=True,optmsg="Testing 1D Shape Functions ")
+        self.compare_test_data(ftest=shape1d,fargs=ptst,truedata=exout,datamsg=datamsg,optmsg="Testing 1D Shape Functions ")
 
         
 

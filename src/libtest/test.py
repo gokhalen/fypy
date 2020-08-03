@@ -22,7 +22,8 @@ def make_mismatch_message(idxtuple,aa,bb):
     return msg
 
 class TestFyPy(unittest.TestCase):
-   def compare_test_data(self,ftest:Callable,fargs:Iterable,fref:Callable,frefargs:Iterable,truedata:Iterable,datamsg:Iterable,data_supplied=False,optmsg=None):
+   
+   def compare_test(self,ftest:Callable=None,fargs:Iterable=None,fref:Callable=None,frefargs:Iterable=None,truedata:Iterable=None,datamsg:Iterable=None,data_supplied=False,optmsg=None):
       '''
       ftest    : Callable to be tested
       fargs    : Iterable yielding tuples which are used as 
@@ -47,8 +48,6 @@ class TestFyPy(unittest.TestCase):
       ftest = itertools.repeat(ftest)
       fref  = itertools.repeat(fref)
 
-      #print(ftest,fargs,fref,frefargs,truedata)
-      
       for _i,(_ftest,_fargs,_fref,_frefargs,_truedata) in enumerate(zip(ftest,fargs,fref,frefargs,truedata)):
          # if test data is not supplied call _fref to get _truedata
          if ( not data_supplied ):
@@ -61,10 +60,16 @@ class TestFyPy(unittest.TestCase):
             # check if the arrays are are close
             boolclose = npclose(_td,_ad)
             if ( not boolclose ):
-               print(f'datamsg=','actual=',_ad,'true=',_td)
+               # print(f'{datamsg=}','actual=',_ad,'true=',_td)
                idx,aa,bb = get_mismatch(_td,_ad,closetol=closetol)
                mismsg    = make_mismatch_message(idx,aa,bb)
-               outmsg    = optmsg + f"Data not close for field {_dmsg}" + mismsg
-               breakpoint()
+               outmsg    = optmsg + f"Data not close for field {_dmsg}" + mismsg + f'for the {_j}th argument' 
             self.assertTrue(boolclose,msg=outmsg)
 
+   # partial functions make it easier to use compare_test
+   # Required: ftest,fargs,truedata,datamsg,optmsg
+   compare_test_data = functools.partialmethod(compare_test,fref=None,frefargs=None,data_supplied=True)
+   # Required: ftest,fargs,fref,frefargs,datamsg,optmsg
+   compare_test_func = functools.partialmethod(compare_test,truedata=None,data_supplied=False)
+      
+   
