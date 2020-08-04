@@ -10,6 +10,18 @@ class TestLibTest(TestFyPy):
     @staticmethod
     def func2(xx):
         return (3*xx + 5*xx**0.5,)
+
+    @staticmethod
+    def funcwrong1(xx,wrngrow,wrngcol):
+        (wrongdata,) = TestLibTest.func1(xx)
+        #wrongdata[wrngrow,wrngcol] +=100
+        return (wrongdata,)
+
+    @staticmethod
+    def funcwrong2(xx,wrngrow,wrngcol):
+        (wrongdata,) = TestLibTest.func2(xx)
+        wrongdata[wrngrow,wrngcol] +=100
+        return (wrongdata,)
     
     def test_compare_test_data(self):
         # generate random data for testing purposes
@@ -18,26 +30,30 @@ class TestLibTest(TestFyPy):
         print(' Testing compare_test_data and compare_test_func ... ')
         
         ftestlist  = [ self.func1, self.func2 ]
+        fwronglist = [ self.funcwrong1, self.funcwrong2 ]
+        
         nrows      = np.random.randint(1,1024)
         ncols      = np.random.randint(1,1024)
         fargs1     = np.random.rand(nrows,ncols)
         fargs2     = np.random.rand(nrows,ncols)
 
-        for ftest in ftestlist:
-            print('in ftest loop')
+        for ftest,fwrong in zip(ftestlist,fwronglist):
             fargs      = [ (fargs1,),(fargs2,) ]
             truedata   = [ ftest(*args) for args in fargs]
 
             #sanity check must fail
-            #rowwrng = np.random.randint(0,nrows)
-            #colwrng = np.random.randint(0,ncols)
+            rowwrng = np.random.randint(0,nrows)
+            colwrng = np.random.randint(0,ncols)
             #truedata[0][0][rowwrng][colwrng] +=1100
-            #print('wrong row= ',rowwrng, 'wrong col= ',colwrng) 
+            print('wrong row= ',rowwrng, 'wrong col= ',colwrng)
+            fwrongargs = [ (fargs1,rowwrng,colwrng),(fargs2,rowwrng,colwrng)]
             
-            self.compare_test_data(ftest=ftest,fargs=fargs,truedata=truedata,datamsg=['fargs1'],optmsg='')
-            # print(truedata[0][nrows-1][ncols-1],ftest(*fargs[0])[nrows-1][ncols-1])
+            self.compare_test_data(ftest=ftest,fargs=fargs,truedata=truedata,datamsg=['data1'],optmsg='Testing compare_test_data ... ')
+            breakpoint()
+            self.compare_test_func(ftest=ftest,fargs=fargs,fref=fwrong,frefargs=fwrongargs,datamsg=['data1'],optmsg='Testing compare_test_func ... ')
+
             
-            
+        
 
                                 
         

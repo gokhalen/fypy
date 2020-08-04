@@ -62,7 +62,7 @@ class TestFyPy(unittest.TestCase):
                # print(f'{datamsg=}','actual=',_ad,'true=',_td)
                idx,aa,bb = get_mismatch(_td,_ad,closetol=closetol)
                mismsg    = make_mismatch_message(idx,aa,bb)
-               outmsg    = optmsg + f"Data not close for field {_dmsg}" + mismsg + f'for the {_j}th argument' 
+               outmsg    = optmsg + f"Data not close for field {_dmsg} " + mismsg + f'for the {_j}th argument' 
             self.assertTrue(boolclose,msg=outmsg)
 
    # partial functions make it easier to use compare_test
