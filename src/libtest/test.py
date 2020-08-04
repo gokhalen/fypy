@@ -1,7 +1,7 @@
 import functools,numpy as np,unittest,itertools
 from typing import Callable,Tuple,Iterable
 closetol=1e-12
-npclose=functools.partial(np.allclose,atol=closetol)
+npclose=functools.partial(np.allclose,rtol=0.0,atol=closetol)
 
 def get_mismatch(aa,bb,closetol=1E-12):
    # if entries of aa and bb are off by an amount greater than closetol

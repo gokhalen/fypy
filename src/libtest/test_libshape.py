@@ -99,34 +99,49 @@ class TestLibShape(TestFyPy):
         pp.append((-0.5,0.5))  ; ss.append(np.asarray((0.1875, 0.0625, 0.1875,  0.5625 )))
         pp.append((-0.5,-0.5)) ; ss.append(np.asarray((0.5625, 0.1875, 0.0625,  0.1875 )))
         pp.append((0.5,-0.5))  ; ss.append(np.asarray((0.1875, 0.5625, 0.1875,  0.0625 )))
-        pp.append((-1,-1))     ; ss.append((0.25,0.25,0.25,0.25))
+        pp.append((-1,-1))     ; ss.append(np.asarray((1     ,    0.0,   0.0,    0.0   )))
+        pp.append((1,-1))      ; ss.append(np.asarray((0     ,    1.0,   0.0,    0.0   )))
+        pp.append((1,1))       ; ss.append(np.asarray((0     ,    0.0,   1.0,    0.0   )))
+        pp.append((-1,1))      ; ss.append(np.asarray((0     ,    0.0,   0.0,    1.0   )))
 
-
-        # compute shape function derivatives
+        # compute shape function derivatives (0.0,0.00)
         d1 = np.asarray((-0.25,-0.25)); d2 = np.asarray((0.25,-0.25)); d3 = np.asarray((0.25,0.25)); d4=np.asarray((-0.25,0.25))
         dd.append(np.asarray((d1,d2,d3,d4)))
 
+        # (0.5,0.5)
         d1 = np.asarray((-0.125,-0.125)); d2 = np.asarray((0.125,-0.375)); d3 = np.asarray((0.375,0.375)); d4=np.asarray((-0.375,0.125))
         dd.append(np.asarray((d1,d2,d3,d4)))
 
+        # (-0.5,0.5)
         d1 = np.asarray((-0.125,-0.375)); d2 = np.asarray((0.125,-0.125)); d3 = np.asarray((0.375,0.125)); d4=np.asarray((-0.375,0.375))
         dd.append(np.asarray((d1,d2,d3,d4)))
 
+        # (-0.5,-0.5)
         d1 = np.asarray((-0.375,-0.375)); d2 = np.asarray((0.375,-0.125)); d3 = np.asarray((0.125,0.125)); d4=np.asarray((-0.125,0.375))
         dd.append(np.asarray((d1,d2,d3,d4)))
 
+        # (0.5,-0.5)
         d1 = np.asarray((-0.375,-0.125)); d2 = np.asarray((0.375,-0.375)); d3 = np.asarray((0.125,0.375)); d4=np.asarray((-0.125,0.125))
         dd.append(np.asarray((d1,d2,d3,d4)))
+        
+        # (-1,-1)
+        d1 = np.asarray((-0.5,-0.5)); d2 = np.asarray((0.5,0.0)); d3 = np.asarray((0.0,0.0)); d4=np.asarray((0.0,0.5))
+        dd.append(np.asarray((d1,d2,d3,d4)))
 
+        # (1,-1)
+        d1 = np.asarray((-0.5,0.0)); d2 = np.asarray((0.5,-0.5)); d3 = np.asarray((0.0,0.5)); d4=np.asarray((0.0,0.0))
+        dd.append(np.asarray((d1,d2,d3,d4)))
 
+        # (1,1)
+        d1 = np.asarray((0.0,0.0)); d2 = np.asarray((0.0,-0.5)); d3 = np.asarray((0.5,0.5)); d4=np.asarray((-0.5,0.0))
+        dd.append(np.asarray((d1,d2,d3,d4)))
 
+        # (-1,1)
+        d1 = np.asarray((0.0,-0.5)); d2 = np.asarray((0.0,0.0)); d3 = np.asarray((0.5,0.0)); d4=np.asarray((-0.5,0.5))
+        dd.append(np.asarray((d1,d2,d3,d4)))
+        
         # expected output
         *exout, = map(Shape,ss,dd)
-        '''
-        pp.append((1,-1))      ; ss.append((0.25,0.25,0.25,0.25))
-        pp.append((1,1))       ; ss.append((0.25,0.25,0.25,0.25))
-        pp.append((-1,1))      ; ss.append((0.25,0.25,0.25,0.25))
-        '''
 
         # the iterable containing arguments, contains iterables which when expaned will be come arguments
         pts = tuple([(p,) for p in pp])
