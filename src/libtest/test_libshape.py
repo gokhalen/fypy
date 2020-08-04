@@ -83,11 +83,62 @@ class TestLibShape(TestFyPy):
         # der[3][1][0] +=1
         datamsg =  [" Shape Functions ", " Shapefunction Derivatives "]
         ptst    =  tuple([ (tt,) for tt in pts ])
-        # ptst is a tuple of tuple of arguments to shape1d. Each tuple when unpacked yields the right argument  
+        # ptst is a tuple of tuple of arguments to shape1d. Each tuple when unpacked yields the right argument
         self.compare_test_data(ftest=shape1d,fargs=ptst,truedata=exout,datamsg=datamsg,optmsg="Testing 1D Shape Functions ")
 
         
+    
+    def test_shape2d(self):
+        print('testing shape2d...')
+        # pp - list of points (tuples) to be tested
+        # ss - list of expected shape functions at each point (tuples)
+        # dd - list of expected shape function derivatives at each point
+        pp,ss,dd = [],[],[]
+        pp.append((0.0,0.0))   ; ss.append(np.asarray((0.25,   0.25  , 0.25  ,  0.25   ))) # done
+        pp.append((0.5,0.5))   ; ss.append(np.asarray((0.0625, 0.1875, 0.5625,  0.1875 ))) # done
+        pp.append((-0.5,0.5))  ; ss.append(np.asarray((0.1875, 0.0625, 0.1875,  0.5625 )))
+        pp.append((-0.5,-0.5)) ; ss.append(np.asarray((0.5625, 0.1875, 0.0625,  0.1875 )))
+        pp.append((0.5,-0.5))  ; ss.append(np.asarray((0.1875, 0.5625, 0.1875,  0.0625 )))
+        pp.append((-1,-1))     ; ss.append((0.25,0.25,0.25,0.25))
 
+
+        # compute shape function derivatives
+        d1 = np.asarray((-0.25,-0.25)); d2 = np.asarray((0.25,-0.25)); d3 = np.asarray((0.25,0.25)); d4=np.asarray((-0.25,0.25))
+        dd.append(np.asarray((d1,d2,d3,d4)))
+
+        d1 = np.asarray((-0.125,-0.125)); d2 = np.asarray((0.125,-0.375)); d3 = np.asarray((0.375,0.375)); d4=np.asarray((-0.375,0.125))
+        dd.append(np.asarray((d1,d2,d3,d4)))
+
+        d1 = np.asarray((-0.125,-0.375)); d2 = np.asarray((0.125,-0.125)); d3 = np.asarray((0.375,0.125)); d4=np.asarray((-0.375,0.375))
+        dd.append(np.asarray((d1,d2,d3,d4)))
+
+        d1 = np.asarray((-0.375,-0.375)); d2 = np.asarray((0.375,-0.125)); d3 = np.asarray((0.125,0.125)); d4=np.asarray((-0.125,0.375))
+        dd.append(np.asarray((d1,d2,d3,d4)))
+
+        d1 = np.asarray((-0.375,-0.125)); d2 = np.asarray((0.375,-0.375)); d3 = np.asarray((0.125,0.375)); d4=np.asarray((-0.125,0.125))
+        dd.append(np.asarray((d1,d2,d3,d4)))
+
+
+
+        # expected output
+        *exout, = map(Shape,ss,dd)
+        '''
+        pp.append((1,-1))      ; ss.append((0.25,0.25,0.25,0.25))
+        pp.append((1,1))       ; ss.append((0.25,0.25,0.25,0.25))
+        pp.append((-1,1))      ; ss.append((0.25,0.25,0.25,0.25))
+        '''
+
+        # the iterable containing arguments, contains iterables which when expaned will be come arguments
+        pts = tuple([(p,) for p in pp])
+
+        # make sure shape functions sum to 1
+        for i,s in enumerate(ss):
+            tmp = np.sum(s)
+            self.assertEqual(1,tmp,msg=f'{i}th shape functions do not sum to 1')
+
+            
+        datamsg=['Shape functions ','Derivatives of shape functions ']
+        self.compare_test_data(ftest=shape2d,fargs=pts,truedata=exout,datamsg=datamsg,optmsg='Testing 2D shape functions...')
 
         
 

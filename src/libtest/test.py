@@ -23,7 +23,7 @@ def make_mismatch_message(idxtuple,aa,bb):
 
 class TestFyPy(unittest.TestCase):
    
-   def compare_test(self,ftest:Callable=None,fargs:Iterable=None,fref:Callable=None,frefargs:Iterable=None,truedata:Iterable=None,datamsg:Iterable=None,data_supplied=False,optmsg=None):
+   def compare_test(self,ftest:Callable=None,fargs:Iterable=None,fref:Callable=None,frefargs:Iterable=None,truedata:Iterable=None,datamsg:Iterable=None,data_supplied=False,optmsg=''):
       '''
       ftest    : Callable to be tested
       fargs    : Iterable yielding tuples which are used as 
@@ -62,7 +62,7 @@ class TestFyPy(unittest.TestCase):
                # print(f'{datamsg=}','actual=',_ad,'true=',_td)
                idx,aa,bb = get_mismatch(_td,_ad,closetol=closetol)
                mismsg    = make_mismatch_message(idx,aa,bb)
-               outmsg    = optmsg + f"Data not close for field {_dmsg} " + mismsg + f'for the {_j}th argument' 
+               outmsg    = optmsg + f"Data not close for field {_dmsg} " + mismsg + f'for the {_j}th quantity from the {_i}th argument' 
             self.assertTrue(boolclose,msg=outmsg)
 
    # partial functions make it easier to use compare_test
