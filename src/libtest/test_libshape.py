@@ -14,32 +14,6 @@ class TestLibShape(TestFyPy):
     # shape: (N1,N2...)
     # der  : ((N1x,N1y..),(N2x,N2y,...))
 
-    def compare_shape(self,fshape:Callable,pts:Iterable,exout:Iterable):
-        '''
-        fshape: callable to be tested: shape1d or shape2d
-        pts:    points at which shape functions and their derivatives have to be tested
-        exout:  expected output containing Shape named tuples 
-        '''
-        #  actout: actual output to be compard with 'exout' expected output
-        *actout,             = map(fshape,pts)
-        msgshp,msgder   = 'Mismatch in shape functions: ','Mismatch in shape function derivatives: '
-
-        for i,(act,exp) in enumerate(zip(actout,exout)):
-            boolshp,boolder = map(npclose,(act.shape,act.der),(exp.shape,exp.der))
-            if ( not boolshp ):
-                idx,aa,bb = get_mismatch(act.shape,exp.shape,closetol=closetol)
-                msgshp    += make_mismatch_message(idx,aa,bb) + f'for {i}th entry in testing data'
-                pass
-
-            if ( not boolder ):
-                print(f'{act=}',f'{exp=}')
-                idx,aa,bb  = get_mismatch(act.der,exp.der,closetol=closetol)
-                msgder    += make_mismatch_message(idx,aa,bb) + f'for {i}th entry in testing data'
-                pass
-            
-            self.assertTrue(boolshp,msg=msgshp)
-            self.assertTrue(boolder,msg=msgder)
-    
     def test_shape1d(self):
         # points for which the testing is to be performed, note: points are tuples
         pts  = ((-1,),(-0.5,),(0.0,),(0.5,),(1.0,))
@@ -74,7 +48,7 @@ class TestLibShape(TestFyPy):
         #expected output
         *exout,=map(Shape,shp,der)
 
-        self.compare_shape(shape1d,pts,exout)
+        #self.compare_shape(shape1d,pts,exout)
 
         # sanity test - should produce error in [2][1] shape function
         # shp[2][1] += 1
