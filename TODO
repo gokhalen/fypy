@@ -1,5 +1,5 @@
--1)  Unittests for shape and testing of the compare_test routines
+-1)  Additional unittests for shape2d at non special points
  0)  Annotations/Type hints  for gausslegendre.py 
- 1)  2D,3D shapefunctions and their derivatives, jacobians, and unittests for bot h
+ 1)  Jacobians, and its unittests
  2)  unittest for 1d jacobian
- 3)  Vectorize shape functions
+ 3)  Dictionary for initalizing element types

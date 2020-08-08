@@ -103,6 +103,12 @@ class TestLibShape(TestFyPy):
         pp.append((1,-1))      ; ss.append(np.asarray((0     ,    1.0,   0.0,    0.0   )))
         pp.append((1,1))       ; ss.append(np.asarray((0     ,    0.0,   1.0,    0.0   )))
         pp.append((-1,1))      ; ss.append(np.asarray((0     ,    0.0,   0.0,    1.0   )))
+        # should also work when points are appended as np arrays. # gaussian quadrature routines provide data in np arrays
+        pp.append(np.asarray((0.3,0.7))) ;    ss.append(np.asarray([0.0525,0.0975,0.5525,0.2975]))
+        pp.append(np.asarray((-0.25,0.85))) ; ss.append(np.asarray([0.046875,0.028125,0.346875,0.578125]))
+        pp.append(np.asarray((-0.7,-0.15))) ; ss.append(np.asarray([0.48875,0.08625,0.06375,0.36125]))
+        pp.append(np.asarray((0.19,-0.55))) ; ss.append(np.asarray([0.313875,0.461125,0.133875,0.091125]))
+
 
         # compute shape function derivatives (0.0,0.00)
         d1 = np.asarray((-0.25,-0.25)); d2 = np.asarray((0.25,-0.25)); d3 = np.asarray((0.25,0.25)); d4=np.asarray((-0.25,0.25))
@@ -138,6 +144,22 @@ class TestLibShape(TestFyPy):
 
         # (-1,1)
         d1 = np.asarray((0.0,-0.5)); d2 = np.asarray((0.0,0.0)); d3 = np.asarray((0.5,0.0)); d4=np.asarray((-0.5,0.5))
+        dd.append(np.asarray((d1,d2,d3,d4)))
+
+        # (0.3,0.7)
+        d1 = np.asarray((-0.075,-0.175)); d2 = np.asarray((0.075,-0.325)); d3 = np.asarray((0.425,0.325)); d4=np.asarray((-0.425,0.175))
+        dd.append(np.asarray((d1,d2,d3,d4)))
+
+        # (-0.25,0.85)
+        d1 = np.asarray((-0.0375,-0.3125)); d2 = np.asarray((0.0375,-0.1875)); d3 = np.asarray((0.4625,0.1875)); d4=np.asarray((-0.4625,0.3125))
+        dd.append(np.asarray((d1,d2,d3,d4)))
+        
+        # (-0.7,-0.15)
+        d1 = np.asarray((-0.2875,-0.425)); d2 = np.asarray((0.2875,-0.075)); d3 = np.asarray((0.2125,0.075)); d4=np.asarray((-0.2125,0.425))
+        dd.append(np.asarray((d1,d2,d3,d4)))
+
+        # (0.19,-0.55)
+        d1 = np.asarray((-0.3875,-0.2025)); d2 = np.asarray((0.3875,-0.2975)); d3 = np.asarray((0.1125,0.2975)); d4=np.asarray((-0.1125,0.2025))
         dd.append(np.asarray((d1,d2,d3,d4)))
         
         # expected output

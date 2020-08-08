@@ -55,14 +55,14 @@ class TestFyPy(unittest.TestCase):
 
          _actualdata=_ftest(*_fargs)
          # now iterate over the reference data  and actualdata
-         for _j,(_td,_ad,_dmsg) in enumerate(zip(_truedata,_actualdata,datamsg)):
+         for _j,(_td,_ad,_dmsg,_fldname) in enumerate(zip(_truedata,_actualdata,datamsg,_actualdata._fields)):
             # check if the arrays are are close
             boolclose = npclose(_td,_ad)
             if ( not boolclose ):
                # print(f'{datamsg=}','actual=',_ad,'true=',_td)
                idx,aa,bb = get_mismatch(_td,_ad,closetol=closetol)
                mismsg    = make_mismatch_message(idx,aa,bb)
-               outmsg    = optmsg + f"Data not close for field {_dmsg} " + mismsg + f'for the {_j}th quantity from the {_i}th argument' 
+               outmsg    = optmsg + f"Data not close for field {_dmsg} " + mismsg + f'for the {_j}th quantity ({_fldname}) from the {_i}th argument' 
             self.assertTrue(boolclose,msg=outmsg)
 
    # partial functions make it easier to use compare_test
