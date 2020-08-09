@@ -1,14 +1,39 @@
 import unittest,numpy as np,math,functools,itertools
 from typing import Callable,Any,Union
 from ..libinteg.gausslegendre import *
+from ..libinteg.integrate import integrate_parent
+from ..libshape.shape import *
 from .test import *
 
 
 class TestLibInteg(TestFyPy):
 
-    # methods to check integration
+    # methods to check integration points and integration routines
     @staticmethod
-    def func_Ni():
+    def func_N1(gausspt,shp,data):
+        # retuns N1 in the parent domain
+        # gausspt: gauss point at which function evaluation has to be done
+        # shp: shape functions and their derivatives at the gauss point
+        return shp.shape[0]
+    @staticmethod
+    def func_N2(gausspt,shp,data):
+        # retuns N2 in the parent domain
+        # gausspt: gauss point at which function evaluation has to be done
+        # shp: shape functions and their derivatives at the gauss point
+        return shp.shape[1]
+
+    @staticmethod
+    def func_N1N2(gausspt,shp,data):
+        # retuns N1N2 in the parent domain
+        # gausspt: gauss point at which function evaluation has to be done
+        # shp: shape functions and their derivatives at the gauss point
+
+        # in 1D this is a function of degree 2, will require at least 2 gauss pts to integrate
+        return shp.shape[0]*shp.shape[1]
+    
+    @staticmethod
+    def func_1(gaussp1,shp,data):
+        return 1
     
     def test_integration_consistency(self):
         # consistency tests between gaussnd and gauss1d,gauss2d,gauss3d routines
@@ -160,6 +185,29 @@ class TestLibInteg(TestFyPy):
         
         self.compare_test_data(ftest=gauss3d, fargs=((npoints,),),truedata=truedata,datamsg=datamsg,optmsg=optmsg)
 
-    def test_integration_1d(self):
+    def test_parent_integration_1d(self):
+        # what is the minimum number of points needed to integrate N_a in 1D
+        funclistlin = [self.func_1,self.func_N1,self.func_N2]
+        expvallin   = [ 2, 1, 1 ]
+
+        funclistquad = [self.func_N1N2]
+        expvalquad   = [1/3]
         
-        pass
+        for ipoint in range(1,10):
+            gg    = gauss1d(ipoint)
+            *ss,  = map(shape1d,gg.pts)
+            data  = [None]*ipoint
+            wtjac = gg.wts
+
+            # integral value
+            # test linear functions
+            for ftest,fval in zip(funclistlin,expvallin):
+                intval = integrate_parent(ftest,gg.pts,ss,data,wtjac)
+                self.assertAlmostEqual(fval,intval,places=closeplaces,msg=f'test_integration_1d failed for {ipoint=} func={ftest.__name__}')
+
+            # test quadratic functions
+            if (ipoint >= 2):
+                for ftest,fval in zip(funclistquad,expvalquad):
+                    intval = integrate_parent(ftest,gg.pts,ss,data,wtjac)
+                    self.assertAlmostEqual(fval,intval,places=closeplaces,msg=f'test_integration_1d failed for {ipoint=} func={ftest.__name__}')
+                
