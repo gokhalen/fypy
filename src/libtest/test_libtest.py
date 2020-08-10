@@ -30,7 +30,7 @@ class TestLibTest(TestFyPy):
         # generate random data for testing purposes
         # Note: truedata has to yield iterables. compare_test_data iterates over those iterables, gets numpy arrays, and compares them.
         # Similarly, the functions to be tested have to yield iterables. compare_test_data iterates over those iterables, gets numpy arrays, and compares them.
-        print(' Testing compare_test_data and compare_test_func ... ')
+        # print(' Testing compare_test_data and compare_test_func ... ')
         
         ftestlist  = [ self.func1, self.func2 ]
         fwronglist = [ self.funcwrong1, self.funcwrong2 ]

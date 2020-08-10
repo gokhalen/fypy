@@ -63,7 +63,7 @@ class TestLibShape(TestFyPy):
         
     
     def test_shape2d(self):
-        print('testing shape2d...')
+        # print('testing shape2d...')
         # pp - list of points (tuples) to be tested
         # ss - list of expected shape functions at each point (tuples)
         # dd - list of expected shape function derivatives at each point

@@ -1,5 +1,5 @@
--1)  Additional unittests for shape2d at non special points
+-2)  Integration of shapefunction derivatives
+-1)  Interpolation routines
  0)  Annotations/Type hints  for gausslegendre.py 
  1)  Jacobians, and its unittests
- 2)  unittest for 1d jacobian
- 3)  Dictionary for initalizing element types
+ 2)  Dictionary for initalizing element types and quad

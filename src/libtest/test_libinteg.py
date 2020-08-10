@@ -10,20 +10,20 @@ class TestLibInteg(TestFyPy):
 
     # methods to check integration points and integration routines
     @staticmethod
-    def func_N1(gausspt,shp,data):
+    def func1_N1(gausspt,shp,data):
         # retuns N1 in the parent domain
         # gausspt: gauss point at which function evaluation has to be done
         # shp: shape functions and their derivatives at the gauss point
         return shp.shape[0]
     @staticmethod
-    def func_N2(gausspt,shp,data):
+    def func1_N2(gausspt,shp,data):
         # retuns N2 in the parent domain
         # gausspt: gauss point at which function evaluation has to be done
         # shp: shape functions and their derivatives at the gauss point
         return shp.shape[1]
 
     @staticmethod
-    def func_N1N2(gausspt,shp,data):
+    def func1_N1N2(gausspt,shp,data):
         # retuns N1N2 in the parent domain
         # gausspt: gauss point at which function evaluation has to be done
         # shp: shape functions and their derivatives at the gauss point
@@ -32,13 +32,91 @@ class TestLibInteg(TestFyPy):
         return shp.shape[0]*shp.shape[1]
     
     @staticmethod
-    def func_1(gaussp1,shp,data):
+    def func1_1(gausspt,shp,data):
         return 1
+
+    @staticmethod
+    def func1_N1xN2x(gausspt,shp,data):
+        # for 1D, the derivatives of the shape functions are constants (-0.5,0.5)
+        return shp.der[0][0]*shp.der[1][0]
+
+    @staticmethod
+    def func1_N1x(gausspt,shp,data):
+        return shp.der[0][0]
+
+    @staticmethod
+    def func1_N2x(gausspt,shp,data):
+        return shp.der[1][0]
+
+    @staticmethod
+    def func1_v_N1_N2(gausspt,shp,data):
+        # test vector integration the _v_ stands for vector
+        return np.asarray((shp.shape[0],shp.shape[1]))
+
+    @staticmethod
+    def func1_m_1(gausspt,shp,data):
+        # _m_ stands for matrix
+        # return [[ N1,N2],[N2,N1]]
+        a00 = shp.shape[0]; a01 = shp.shape[1]
+        a10 = shp.shape[1]; a11 = shp.shape[0]
+        
+        return np.asarray( ((a00,a01),(a10,a11)) )
+
+    @staticmethod
+    def func1_m_2(gausspt,shp,data):
+        # quadratic matrix function - needs 2 pt integration
+        # return [[ N1*N1,N1*N21],[N2*N1,N2*N2]]
+    
+        a00 = shp.shape[0]*shp.shape[0]; a01 = shp.shape[0]*shp.shape[1]
+        a10 = shp.shape[1]*shp.shape[0]; a11 = shp.shape[1]*shp.shape[1]
+
+        return np.asarray( ((a00,a01),(a10,a11)) )
+    
+    @staticmethod
+    def func2_N1(gausspt,shp,data):
+        return shp.shape[0]
+
+    @staticmethod
+    def func2_N2(gausspt,shp,data):
+        return shp.shape[1]
+
+    @staticmethod
+    def func2_N3(gausspt,shp,data):
+        return shp.shape[2]
+
+    @staticmethod
+    def func2_N4(gausspt,shp,data):
+        return shp.shape[3]
+
+    @staticmethod
+    def func2_N1pN2pN3pN4(gausspt,shp,data):
+        return (shp.shape[0] + shp.shape[1] + shp.shape[2] + shp.shape[3])
+
+    @staticmethod
+    def func2_N1N3(gausspt,shp,data):
+        return (shp.shape[0]*shp.shape[2])
+
+    @staticmethod
+    def func2_N1N2(gausspt,shp,data):
+        return (shp.shape[0]*shp.shape[1])
+
+    @staticmethod
+    def func2_N1N2N3(gausspt,shp,data):
+        # third degree function in each direction, can be integrated using 2pt rule
+        return (shp.shape[0]*shp.shape[1]*shp.shape[2])
+
+    @staticmethod
+    def func2_v_N1x_N2y_N3x_N4y(gausspt,shp,data):
+        # 1pt integration
+        n1x = shp.der[0][0]
+        n2y = shp.der[1][1]
+        n3x = shp.der[2][0]
+        n4y = shp.der[3][1]
+        return np.asarray((n1x,n2y,n3x,n4y))
     
     def test_integration_consistency(self):
         # consistency tests between gaussnd and gauss1d,gauss2d,gauss3d routines
         # gaussnd uses gauss1d, so results should be exactly equal.
-
         
         ngauss,npoint=3,10
         
@@ -186,13 +264,15 @@ class TestLibInteg(TestFyPy):
         self.compare_test_data(ftest=gauss3d, fargs=((npoints,),),truedata=truedata,datamsg=datamsg,optmsg=optmsg)
 
     def test_parent_integration_1d(self):
-        # what is the minimum number of points needed to integrate N_a in 1D
-        funclistlin = [self.func_1,self.func_N1,self.func_N2]
-        expvallin   = [ 2, 1, 1 ]
-
-        funclistquad = [self.func_N1N2]
-        expvalquad   = [1/3]
+        # 0 is the minimum number of points needed to integrate N_a in 1D
+        # n gauss points integrate function of order (2n) i.e. (degree 2n-1) exactly
         
+        funclistlin = [self.func1_1,self.func1_N1,self.func1_N2,self.func1_N1xN2x,self.func1_N1x,self.func1_N2x,self.func1_v_N1_N2,self.func1_m_1]
+        expvallin   = [ 2, 1, 1, -0.5, -1, 1, np.asarray((1,1)), np.asarray(( (1,1),(1,1) ))   ]
+
+        funclistquad = [self.func1_N1N2, self.func1_m_2]
+        expvalquad   = [1/3,            np.asarray(( (2.0/3.0,1/3),(1/3,2.0/3.0) ))]
+
         for ipoint in range(1,10):
             gg    = gauss1d(ipoint)
             *ss,  = map(shape1d,gg.pts)
@@ -202,12 +282,52 @@ class TestLibInteg(TestFyPy):
             # integral value
             # test linear functions
             for ftest,fval in zip(funclistlin,expvallin):
-                intval = integrate_parent(ftest,gg.pts,ss,data,wtjac)
-                self.assertAlmostEqual(fval,intval,places=closeplaces,msg=f'test_integration_1d failed for {ipoint=} func={ftest.__name__}')
+                intval  = integrate_parent(ftest,gg.pts,ss,data,wtjac)
+                boolcmp = npclose(intval,fval) 
+                self.assertTrue(boolcmp,msg=f'test_integration_1d linear failed for {ipoint=} func={ftest.__name__}')
 
             # test quadratic functions
             if (ipoint >= 2):
                 for ftest,fval in zip(funclistquad,expvalquad):
-                    intval = integrate_parent(ftest,gg.pts,ss,data,wtjac)
-                    self.assertAlmostEqual(fval,intval,places=closeplaces,msg=f'test_integration_1d failed for {ipoint=} func={ftest.__name__}')
-                
+                    intval  = integrate_parent(ftest,gg.pts,ss,data,wtjac)
+                    boolcmp = npclose(intval,fval) 
+                    self.assertTrue(boolcmp,msg=f'test_integration_1d quad failed for {ipoint=} func={ftest.__name__}')
+
+    def test_parent_integration_2d(self):
+
+        # TEST SHAPE FUNCTION DERIVATIVE INTEGRATION
+        
+        funclistlin =[]; expvallin  = []
+        funclistquad=[]; expvalquad = []
+
+        funclistlin.append(self.func2_N1);                  expvallin.append(1)
+        funclistlin.append(self.func2_N2);                  expvallin.append(1)
+        funclistlin.append(self.func2_N3);                  expvallin.append(1)
+        funclistlin.append(self.func2_N4);                  expvallin.append(1)
+        funclistlin.append(self.func2_N1pN2pN3pN4);         expvallin.append(4)
+        
+        _exp = np.asarray( (-1.0,-1.0,1.0,1.0) )
+        funclistlin.append(self.func2_v_N1x_N2y_N3x_N4y);   expvallin.append(_exp)
+
+        funclistquad.append(self.func2_N1N3);               expvalquad.append(1.0/9)
+        funclistquad.append(self.func2_N1N2);               expvalquad.append(2.0/9)
+        funclistquad.append(self.func2_N1N2N3);             expvalquad.append(1.0/36)
+
+        for ipoint in range(1,10):
+            gg    = gauss2d(ipoint)
+            *ss,  = map(shape2d,gg.pts)
+            data  = [None]*ipoint*ipoint
+            wtjac = gg.wts
+
+            # test functions which need one point (in each direction) integration
+            for ftest,fval in zip(funclistlin,expvallin):
+                intval  = integrate_parent(ftest,gg.pts,ss,data,wtjac)
+                boolcmp = npclose(intval,fval)
+                self.assertTrue(boolcmp,msg=f'test_integration_2d linear failed for {ipoint=} func={ftest.__name__} {intval=} {fval=}')
+
+            # test functions which need two point (in each direction) integration
+            if (ipoint >= 2):
+                for ftest,fval in zip(funclistquad,expvalquad):
+                    intval  = integrate_parent(ftest,gg.pts,ss,data,wtjac)
+                    boolcmp = npclose(intval,fval)
+                    self.assertTrue(boolcmp,msg=f'test_integration_2d quad failed for {ipoint=} func={ftest.__name__} {intval=} {fval=}')
