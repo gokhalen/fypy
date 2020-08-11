@@ -8,6 +8,8 @@ from .test import *
 from ..libutil.util import *
 from ..libinteg.gausslegendre import *
 
+
+maxinteg = 10
 class TestLibShape(TestFyPy):
     
     @staticmethod
@@ -161,7 +163,7 @@ class TestLibShape(TestFyPy):
         self.compare_test_data(ftest=shape2d,fargs=pts,truedata=exout,datamsg=datamsg,optmsg='Testing 2D shape functions...')
 
     def test_jaco1d(self):
-        for ipoint in range(1,10):
+        for ipoint in range(1,maxinteg):
             # generate random interval (defined by two points and a straight line joining them) to test.
             # The endpoints of the interval must not be same, hence the while and break
             while True:
@@ -186,5 +188,18 @@ class TestLibShape(TestFyPy):
                 # AssertionError must be raised when length of element is very small ( <1e-12 )
                 self.assertRaises(AssertionError,jaco1d,*tt)
 
+    def test_interp(self):
+        # test 1d interpolation with scalars, vectors and matrices
+        
+        # 1d - 3 integration points
+        gg       = gauss1d(3)
+        *ss,     = map(shape1d,gg.pts)
+        shp      = [s.shape for s in ss ]
+
+
+        d1 = np.asarray((1,));    d2 = np.asarray((1,))
+        actout = interp([d1,d2],shp[0])
+        
+            
 
 
