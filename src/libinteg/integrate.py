@@ -2,8 +2,9 @@ from .gausslegendre import *
 from ..libshape.shape import *
 from ..libshape.jacobian import *
 import math
+import numpy as np
 
-def integrate_parent(finteg:Callable,gausspts:Integ,shape:Shape,data,wtjac)->float:
+def integrate_parent(finteg:Callable,gausspts:np.ndarray,shape:Shape,data,wtjac:np.ndarray)->float:
     # Integrates finteg over the domain [-1,1]^n
     # can use math.fsum to avoid truncation error but it doesn't play nice with numpy arrays
 

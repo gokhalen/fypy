@@ -72,4 +72,6 @@ class ParentPoint(Point):
 def dprint(ss):
     ss=ss.split(',')
     for var in ss:
-        print(var+' = '+ str(eval(var)),end=', ')    
+        print(var+' = '+ str(eval(var)),end=', ')
+
+

@@ -71,3 +71,13 @@ def shape2d(xi:TF2)->Shape:
 def shape3d(xi:TF3):
     pass
 
+
+def interp(data,shp):
+    # data: iterable yielding data at element nodes interpolated.
+    #       yielded data should support multiplication operator
+    # shp: shape functions at point of interpolation
+    #      length of data and shp should be same
+
+    return sum((d*s for d,s in zip(data,shp)))
+    
+
