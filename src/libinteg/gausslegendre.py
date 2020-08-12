@@ -38,7 +38,6 @@ def gauss2d(npoints):
     tt=tuple(p1d.ravel())
     it      = map(np.asarray,itertools.product(tt,tt))
     points  = np.asarray((*it,))
-    
     it = map(math.prod,itertools.product(w1d,w1d))
     weights = np.asarray((*it,))
     return Integ(pts=points,wts=weights)     

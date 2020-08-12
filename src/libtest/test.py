@@ -3,6 +3,7 @@ from typing import Callable,Tuple,Iterable
 closetol=1e-12
 closeplaces=12
 npclose=functools.partial(np.allclose,rtol=0.0,atol=closetol)
+npclosertol=functools.partial(np.allclose,rtol=closetol,atol=0.0)
 
 def get_mismatch(aa,bb,closetol=1E-12):
    # if entries of aa and bb are off by an amount greater than closetol

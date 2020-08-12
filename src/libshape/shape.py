@@ -43,7 +43,7 @@ def shape2d(xi:TF2)->Shape:
     like (1-x[1]) once and storing them
     '''
     N1 = (1.0/4.0)*(1-xi[0])*(1-xi[1])
-    N2 = (1.0/4.0)*(1+xi[0])*(1-xi[1])
+    N2 = (1.0/4.0)*(1+xi[0])*(1-xi[1]) 
     N3 = (1.0/4.0)*(1+xi[0])*(1+xi[1])
     N4 = (1.0/4.0)*(1-xi[0])*(1+xi[1])
     
@@ -76,9 +76,11 @@ def interp_parent(data,shp):
     #  interpolation over the parent domain
     # data: iterable yielding data at element nodes interpolated.
     #       yielded data should support multiplication operator
-    # shp: iterable yielding shape functions at point of interpolation
-    #      length of data and shp should be same
+    #       yielded data should ideally be numpy arrays
+    # shp: iterable yielding namedtuple Shape. length of shp is number of points at
+    #      which interpolation is to be desired.
+    #      length of data and the number of shape functions in the Shape namedtuple should be same
 
-    return sum((d*s for d,s in zip(data,shp)))
+    return [  sum( s*d  for s,d in zip(ss.shape,data) )    for ss in shp ]
     
 

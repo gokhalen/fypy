@@ -188,18 +188,70 @@ class TestLibShape(TestFyPy):
                 # AssertionError must be raised when length of element is very small ( <1e-12 )
                 self.assertRaises(AssertionError,jaco1d,*tt)
 
-    def test_interp(self):
+         
+    def test_parent_interp_consistency(self):
         # test 1d interpolation with scalars, vectors and matrices
         
-        # 1d - 3 integration points
-        gg   = gauss1d(3)
-        *ss, = map(shape1d,gg.pts)
-        shp  = [s.shape for s in ss ]
+        # Sanity testing - if the data at each node is a constant,
+        # then after interpolation data at integration point should be the same constant
 
-
-        d1 = np.asarray((1,));    d2 = np.asarray((1,))
-        actout = interp_parent([d1,d2],shp[0])
-        
+        for ipoint,idim,ddim in itertools.product(range(1,maxinteg),range(1,3),range(-1,3)):
             
+            # ipoint: number of integration points to use
+            # idim  : dimension we're testing i.e. calling (gauss1d,shape1d) or (gauss2d,shape2d)
+            # ddim  : dimension dimension of data we're interpolating scalars,vectors or matrices
+            #         ddim = -1 corresponds to pure python scalar,
+            #              =  0 corresponds to zero dim np array
+            #              =  1             to 1    dim np array (vector)
+            #              =  2             to 2    dim np array (matrix)
 
+            fgauss = eval(f'gauss{idim}d')
+            fshape = eval(f'shape{idim}d')
+            gg     = fgauss(ipoint)
+            *ss,   = map(fshape,gg.pts)
 
+            # get random data at the two nodes of the linear element, or four nodes of a quad
+            mult   = np.random.randint(1,2**16)
+            rowdim = np.random.randint(1,10)
+            coldim = np.random.randint(1,16)
+            
+            if ( ddim == -1 ): dd = mult*np.random.rand()                # pure scalar
+            if ( ddim ==  0 ): dd = np.asarray(mult*np.random.rand())    # zero dim np array
+            if ( ddim ==  1 ): dd = mult*np.random.rand(rowdim)          # 1 dim numpy array
+            if ( ddim ==  2 ): dd = mult*np.random.rand(rowdim,coldim)   # 2 dim numpy array
+            
+            nodedata = [dd]*(2**idim) 
+            
+            # output at all integration points
+            actout = interp_parent(nodedata,ss)
+            # expout = expected output at each integration point
+            expout  = dd
+
+            # sanity testing of the test - should fail
+            # if ( ( ipoint == 4 ) and ( idim  == 2 ) and ( ddim == 2 ) ):
+            #     actout[2] += 1e-5
+                
+            for i,out in enumerate(actout):
+                msg = ''
+                boolcmp = npclosertol(out,expout)
+                if ( not boolcmp ):
+                    msg = f'Consistency for {idim}d parent interpolation with constant data fails for {i}th integration point for {ipoint=} {idim=} {ddim=} '
+                self.assertTrue(boolcmp,msg=msg)
+                    
+
+    def test_parent_interp_1d(self):
+        ipoint = 3
+        # scalar
+
+        # vector
+
+        # matrix
+
+    def test_parent_interp_2d(self):
+        ipoint = 2
+
+        # scalar
+
+        # vector
+
+        # matrix
