@@ -192,13 +192,13 @@ class TestLibShape(TestFyPy):
         # test 1d interpolation with scalars, vectors and matrices
         
         # 1d - 3 integration points
-        gg       = gauss1d(3)
-        *ss,     = map(shape1d,gg.pts)
-        shp      = [s.shape for s in ss ]
+        gg   = gauss1d(3)
+        *ss, = map(shape1d,gg.pts)
+        shp  = [s.shape for s in ss ]
 
 
         d1 = np.asarray((1,));    d2 = np.asarray((1,))
-        actout = interp([d1,d2],shp[0])
+        actout = interp_parent([d1,d2],shp[0])
         
             
 

@@ -72,10 +72,11 @@ def shape3d(xi:TF3):
     pass
 
 
-def interp(data,shp):
+def interp_parent(data,shp):
+    #  interpolation over the parent domain
     # data: iterable yielding data at element nodes interpolated.
     #       yielded data should support multiplication operator
-    # shp: shape functions at point of interpolation
+    # shp: iterable yielding shape functions at point of interpolation
     #      length of data and shp should be same
 
     return sum((d*s for d,s in zip(data,shp)))

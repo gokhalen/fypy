@@ -3,6 +3,7 @@ from typing import Callable,Any,Union
 from ..libinteg.gausslegendre import *
 from ..libinteg.integrate import integrate_parent
 from ..libshape.shape import *
+from ..libshape.jacobian import *
 from .test import *
 
 
@@ -277,19 +278,19 @@ class TestLibInteg(TestFyPy):
             gg    = gauss1d(ipoint)
             *ss,  = map(shape1d,gg.pts)
             data  = [None]*ipoint
-            wtjac = gg.wts
+            *jac, = map(Jaco,itertools.repeat(None),itertools.repeat(1),itertools.repeat(None,ipoint)) 
 
             # integral value
             # test linear functions
             for ftest,fval in zip(funclistlin,expvallin):
-                intval  = integrate_parent(ftest,gg.pts,ss,data,wtjac)
+                intval  = integrate_parent(ftest,gg,ss,data,jac)
                 boolcmp = npclose(intval,fval) 
                 self.assertTrue(boolcmp,msg=f'test_integration_1d linear failed for {ipoint=} func={ftest.__name__}')
 
             # test quadratic functions
             if (ipoint >= 2):
                 for ftest,fval in zip(funclistquad,expvalquad):
-                    intval  = integrate_parent(ftest,gg.pts,ss,data,wtjac)
+                    intval  = integrate_parent(ftest,gg,ss,data,jac)
                     boolcmp = npclose(intval,fval) 
                     self.assertTrue(boolcmp,msg=f'test_integration_1d quad failed for {ipoint=} func={ftest.__name__}')
 
@@ -317,17 +318,17 @@ class TestLibInteg(TestFyPy):
             gg    = gauss2d(ipoint)
             *ss,  = map(shape2d,gg.pts)
             data  = [None]*ipoint*ipoint
-            wtjac = gg.wts
+            *jac, = map(Jaco,itertools.repeat(None),itertools.repeat(1),itertools.repeat(None,ipoint*ipoint)) 
 
             # test functions which need one point (in each direction) integration
             for ftest,fval in zip(funclistlin,expvallin):
-                intval  = integrate_parent(ftest,gg.pts,ss,data,wtjac)
+                intval  = integrate_parent(ftest,gg,ss,data,jac)
                 boolcmp = npclose(intval,fval)
                 self.assertTrue(boolcmp,msg=f'test_integration_2d linear failed for {ipoint=} func={ftest.__name__} {intval=} {fval=}')
 
             # test functions which need two point (in each direction) integration
             if (ipoint >= 2):
                 for ftest,fval in zip(funclistquad,expvalquad):
-                    intval  = integrate_parent(ftest,gg.pts,ss,data,wtjac)
+                    intval  = integrate_parent(ftest,gg,ss,data,jac)
                     boolcmp = npclose(intval,fval)
                     self.assertTrue(boolcmp,msg=f'test_integration_2d quad failed for {ipoint=} func={ftest.__name__} {intval=} {fval=}')
