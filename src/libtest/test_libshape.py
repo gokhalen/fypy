@@ -188,6 +188,8 @@ class TestLibShape(TestFyPy):
                 # AssertionError must be raised when length of element is very small ( <1e-12 )
                 self.assertRaises(AssertionError,jaco1d,*tt)
 
+    def test_jaco2d(self):
+        pass
          
     def test_parent_interp_consistency(self):
         # test 1d interpolation with scalars, vectors and matrices
@@ -225,27 +227,41 @@ class TestLibShape(TestFyPy):
             # output at all integration points
             actout = interp_parent(nodedata,ss)
             # expout = expected output at each integration point
-            expout  = dd
+            expout  = [dd]*(ipoint**idim)
 
             # sanity testing of the test - should fail
             # if ( ( ipoint == 4 ) and ( idim  == 2 ) and ( ddim == 2 ) ):
-            #     actout[2] += 1e-5
-                
-            for i,out in enumerate(actout):
-                msg = ''
-                boolcmp = npclosertol(out,expout)
-                if ( not boolcmp ):
-                    msg = f'Consistency for {idim}d parent interpolation with constant data fails for {i}th integration point for {ipoint=} {idim=} {ddim=} '
-                self.assertTrue(boolcmp,msg=msg)
-                    
+            #    actout[2] += 1e-5
+
+            msg = f'Consistency for {idim}d parent interpolation with constant data fails for {ipoint=} {idim=} {ddim=} '
+            self.compare_iterables(actout,expout,msg=msg,rtol=closetol,atol=0.0,desc='integration point ')
 
     def test_parent_interp_1d(self):
-        ipoint = 3
-        # scalar
+        # integration points
+        npoint = 3
+        gg     = gauss1d(npoint)
+        *ss,   = map(shape1d,gg.pts)
+        
+        # scalar data
+        nodedata  = [11.2,-13.7]
+        actout    = interp_parent(nodedata,ss)
+        expout    = [8.393728532056468, -1.25,-10.893728532056468]
+        msg = 'test_parent_interp_1d fails for scalar data '
+        self.compare_iterables(actout,expout,msg=msg,rtol=closetol,atol=0.0,desc='integration point ')
+        
+        # vector data
 
-        # vector
+        d1 = np.asarray([1.23, -0.5]); d2 = np.asarray([7.12, 0.25])
+        nodedata = [d1,d2]
+        actout   = interp_parent(nodedata,ss)
+        out1     = np.asarray([ 1.8938128090838315, -0.4154737509655563 ])
+        out2     = np.asarray([ 4.175, -0.125 ])
+        out3     = np.asarray([ 6.456187190916169 , 0.1654737509655563])
+        expout   = [out1,out2,out3]
+        msg = 'test_parent_interp_1d fails for vector data '
+        self.compare_iterables(actout,expout,msg=msg,rtol=closetol,atol=0.0,desc='integration point ')
 
-        # matrix
+        # matrix data
 
     def test_parent_interp_2d(self):
         ipoint = 2

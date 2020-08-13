@@ -23,6 +23,7 @@ def make_mismatch_message(idxtuple,aa,bb):
          msg = msg + "at location " + str(idx) + " (" + str(aa[ii]) + " != " + str(bb[ii]) + ") "
     return msg
 
+
 class TestFyPy(unittest.TestCase):
    
    def compare_test(self,ftest:Callable=None,fargs:Iterable=None,fref:Callable=None,frefargs:Iterable=None,truedata:Iterable=None,datamsg:Iterable=None,data_supplied=False,optmsg=''):
@@ -72,5 +73,22 @@ class TestFyPy(unittest.TestCase):
    compare_test_data = functools.partialmethod(compare_test,fref=None,frefargs=None,data_supplied=True)
    # Required: ftest,fargs,fref,frefargs,datamsg,optmsg
    compare_test_func = functools.partialmethod(compare_test,truedata=None,data_supplied=False)
+
+
+   def compare_iterables(self,actout,expout,msg,rtol=closetol,atol=closetol,desc=''):
+      # a simple function to compare the contents of two iterables at all integration points
+      # the contents are expected to be np.arrays or something that supports the np.allclose function
+      # actout = actual output
+      # expout = expected output
+      # msg    = error message
+      # desc   = description of what we're iterating over 
+
+      for i,(_act,_exp) in enumerate(zip(actout,expout)):
+         outmsg     = msg + f'at {i}th {desc}'
+         boolcmp = np.allclose(_act,_exp,rtol,atol)
+         self.assertTrue(boolcmp,msg=outmsg)
+
+            
+      
       
    
