@@ -193,6 +193,8 @@ class TestLibShape(TestFyPy):
          
     def test_parent_interp_consistency(self):
         # test 1d interpolation with scalars, vectors and matrices
+        # set the nodes to a constant value (scalar/vector/matrix), and see
+        # that the constant is reproduced by interpolation at all integration points
         
         # Sanity testing - if the data at each node is a constant,
         # then after interpolation data at integration point should be the same constant
@@ -263,11 +265,60 @@ class TestLibShape(TestFyPy):
 
         # matrix data
 
+        d1 = np.asarray(( (12.0,-6.0),  (11.125, 2.5) ))
+        d2 = np.asarray(( (1.0, 3.0),   (0.175, 1.5) ))
+        nodedata = [d1,d2]
+        actout   = interp_parent(nodedata,ss)
+        out1     = np.asarray([[10.76028168082816  , -4.985685011586675 ],[ 9.890916764097122 ,  2.3872983346207413]])
+        out2     = np.asarray([[ 6.5 , -1.5 ],[ 5.65,  2.  ]])
+        out3     = np.asarray([[2.2397183191718413, 1.9856850115866753],[1.4090832359028784, 1.6127016653792583]])
+        expout   = [out1,out2,out3]
+        msg = 'test_parent_interp_1d fails for matrix data '
+        self.compare_iterables(actout,expout,msg=msg,rtol=closetol,atol=0.0,desc='integration point ')
+
     def test_parent_interp_2d(self):
-        ipoint = 2
+        npoint = 2
+        gg     = gauss2d(npoint)
+        *ss,   = map(shape2d,gg.pts)
+        
+        # scalar interpolation
+        d1 = 0.5; d2 = 1.245; d3 = 11.2; d4 = -5.1
+        nodedata = [d1,d2,d3,d4]
+        actout   = interp_parent(nodedata,ss)
+        out1     = 0.16867605983550216; out2=-1.1666437290040874; out3=2.496643729004088;out4=6.346323940164497
+        expout   = [out1,out2,out3,out4]
+        msg = 'test_parent_interp_2d fails for scalar data '
+        self.compare_iterables(actout,expout,msg=msg,rtol=closetol,atol=0.0,desc='integration point ')
+        
+        # vector interpolation
+        d1 = np.asarray((1.23,0.259)); d2 = np.asarray((2.3,0.91));
+        d3 = np.asarray((3.1,-0.765)); d4 = np.asarray((-11.2,-1.3));
+        nodedata = [d1,d2,d3,d4]
+        actout   = interp_parent(nodedata,ss)
+        
+        out1 = np.asarray([-0.5798225016923   ,  0.0619366711584217])
+        out2 = np.asarray([-6.142114317029974 , -0.8523053807878699])
+        out3 = np.asarray([1.652114317029974  ,  0.4236387141212032])
+        out4 = np.asarray([ 0.4998225016923001, -0.5292700044917551])
+        expout  = [out1,out2,out3,out4]
+        msg = 'test_parent_interp_2d fails for vector data '
+        self.compare_iterables(actout,expout,msg=msg,rtol=closetol,atol=0.0,desc='integration point ')
+        
+        # matrix interpolation
+        d1 = np.asarray(( (121.0,-26.0),  (1.15, 0.5) ))
+        d2 = np.asarray(( (1.0, 32.0),   (0.333, 133.5) ))
+        d3 = np.asarray(( (11.0,-61.0),  (12.5, 0.15) ))
+        d4 = np.asarray(( (199.0, 39.0),   (-0.42, 0.5) ))
 
-        # scalar
+        nodedata = [d1,d2,d3,d4]
+        actout   = interp_parent(nodedata,ss)
+        
+        out1 = np.asarray([[109.08759813876276  ,  -7.063036955848214 ],[  1.2590372223488737,  22.651036297108188 ]])
+        out2 = np.asarray([[145.82434331643964  ,  11.187392608830354 ],[  2.0286276236501064,   6.381207098889888 ]])
+        out3 = np.asarray([[31.50899001689372 ,  7.145940724502975],[ 2.463372376349894, 83.16879290111011 ]])
+        out4 = np.asarray([[ 45.57906852790392 , -27.270296377485117],[  7.811962777651126,  22.448963702891817]])
 
-        # vector
-
-        # matrix
+        expout  = [out1,out2,out3,out4]
+        msg     = 'test_parent_interp_2d fails for matrix data '
+        
+        self.compare_iterables(actout,expout,msg=msg,rtol=closetol,atol=0.0,desc='integration point ')
