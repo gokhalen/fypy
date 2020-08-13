@@ -14,10 +14,11 @@ class TestLibShape(TestFyPy):
     
     @staticmethod
     def global_1d_shape_der(x,x1,x2):
+        assert (x1 != x2 ), 'x1 = x2 in global_1d_shape_der'
         # x1 and x2 are scalars
         N1x =  - 1/(x2 - x1)
         N2x =  + 1/(x2 - x1)
-        return np.asarray(( (N1x,),(N2x) ))
+        return np.asarray(( (N1x,),(N2x,) ))
 
     # tests for shape1d and shape2d .
     # input for both is a point represented by a tuple of floats
@@ -163,30 +164,40 @@ class TestLibShape(TestFyPy):
         self.compare_test_data(ftest=shape2d,fargs=pts,truedata=exout,datamsg=datamsg,optmsg='Testing 2D shape functions...')
 
     def test_jaco1d(self):
+        
         for ipoint in range(1,maxinteg):
             # generate random interval (defined by two points and a straight line joining them) to test.
             # The endpoints of the interval must not be same, hence the while and break
             while True:
-                p1   = np.random.rand(3)
-                p2   = np.random.rand(3)
-
+                p1   = 1024*np.random.rand(3)
+                p2   = 1024*np.random.rand(3)
                 if ( np.linalg.norm(p1-p2) > zerotol ):
                     break;
+
+            # testing ...
+            # p1 = np.asarray((-1.0,0.0,0.0))
+            # p2 = np.asarray((+1.0,0.0,0.0))
                 
             gg   = gauss1d(ipoint)
-            mm   = map(shape1d,gg.pts)
-            der  = [ ss.der for ss in mm]
+            *ss, = map(shape1d,gg.pts)
+            der  = [ s.der for s in ss]
             *jj, = map(jaco1d,itertools.repeat([p1,p2]),der)
-
+            actgder = [ j.gder for j in jj] 
             # length of the element = norm(p1-p2)
             ll = np.linalg.norm(p1-p2)
 
             # need to interpolate p from p1,p2 at each integration point, pass it to
             # global_1d_shape_der, get global derivatives and compare with those calculated from jaco1d
+            glbpts   = interp_parent([p1,p2],ss)
+            # convert the point location to a length i.e. norm(p-p1)
+            glblngth = [ np.linalg.norm(pp-p1) for pp in glbpts]
+            *expgder, = map(self.global_1d_shape_der,glblngth,itertools.repeat(0.0),itertools.repeat(ll))
 
-            for tt in zip(itertools.repeat([p1,p1]),der):
-                # AssertionError must be raised when length of element is very small ( <1e-12 )
-                self.assertRaises(AssertionError,jaco1d,*tt)
+            msg = f'Consistency for 1d Jacobian fails for {ipoint=} '
+            self.compare_iterables(actgder,expgder,msg=msg,rtol=closetol,atol=0.0,desc='integration point ')
+
+            # AssertionError must be raised when length of element is very small ( <1e-12 )
+            self.assertRaises(AssertionError,jaco1d,[p1,p1],der)
 
     def test_jaco2d(self):
         pass
