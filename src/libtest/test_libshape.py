@@ -1,5 +1,6 @@
-import unittest,functools,math,itertools
+import unittest,functools,math,itertools,copy
 import numpy as np
+
 
 from typing import Callable,Iterable,Union
 from ..libshape.shape import *
@@ -163,7 +164,7 @@ class TestLibShape(TestFyPy):
         datamsg=['Shape functions ','Derivatives of shape functions ']
         self.compare_test_data(ftest=shape2d,fargs=pts,truedata=exout,datamsg=datamsg,optmsg='Testing 2D shape functions...')
 
-    def test_jaco1d(self):
+    def test_consistency_jaco1d(self):
         
         for ipoint in range(1,maxinteg):
             # generate random interval (defined by two points and a straight line joining them) to test.
@@ -182,9 +183,21 @@ class TestLibShape(TestFyPy):
             *ss, = map(shape1d,gg.pts)
             der  = [ s.der for s in ss]
             *jj, = map(jaco1d,itertools.repeat([p1,p2]),der)
-            actgder = [ j.gder for j in jj] 
+            
+            actgder = [ j.gder for j in jj]
+            actjdet = [ j.jdet for j in jj]
+            actjaco = [ j.jaco for j in jj]
+            
             # length of the element = norm(p1-p2)
             ll = np.linalg.norm(p1-p2)
+
+            # expjdet = expected jacobian determinant
+            expjdet = ll/2.0
+            expjaco = np.asarray((  ( expjdet,),     ))
+            
+            expjdet = [expjdet]*ipoint
+            # expected jacobian
+            expjaco = [ copy.deepcopy(expjaco) for i in range(ipoint) ]
 
             # need to interpolate p from p1,p2 at each integration point, pass it to
             # global_1d_shape_der, get global derivatives and compare with those calculated from jaco1d
@@ -193,15 +206,81 @@ class TestLibShape(TestFyPy):
             glblngth = [ np.linalg.norm(pp-p1) for pp in glbpts]
             *expgder, = map(self.global_1d_shape_der,glblngth,itertools.repeat(0.0),itertools.repeat(ll))
 
-            msg = f'Consistency for 1d Jacobian fails for {ipoint=} '
-            self.compare_iterables(actgder,expgder,msg=msg,rtol=closetol,atol=0.0,desc='integration point ')
+            # sanity checks, must fail
+            # if ( ipoint == 4 ):
+            #    #expjdet[2] +=1e-6
+            #    expjaco[2] +=1e-6
+            #    # breakpoint()
 
+            msg = f'Consistency for 1d Jacobian determinant fails for {ipoint=} '
+            self.compare_iterables(actjdet,expjdet,msg=msg,rtol=closetol,atol=0.0,desc='integration point')
+
+            msg = f'Consistency for 1d Jacobian jacobian fails for {ipoint=} '
+            self.compare_iterables(actjaco,expjaco,msg=msg,rtol=closetol,atol=0.0,desc='integration point')
+            
+            msg = f'Consistency for 1d Jacobian global derivatives fails for {ipoint=} '
+            self.compare_iterables(actgder,expgder,msg=msg,rtol=closetol,atol=0.0,desc='integration point ')
+            
             # AssertionError must be raised when length of element is very small ( <1e-12 )
             self.assertRaises(AssertionError,jaco1d,[p1,p1],der)
 
+    def test_jaco1d(self):
+        # consider two points p1 = (1,2,7) and p2 = (5,3,11) and 3 integration points
+        # check that jdet,gder,jaco are correct
+        p1 = np.asarray((1,2,7));         p2 = np.asarray((5,3,11));
+
+        # distance between p1 and p2
+        dd = 5.744562646538029
+
+        # hand calculated values
+        gder1 =  (1.0 - 0.0)/(0 - dd)  # derivative of the first shape function
+        gder2 =  (0.0 - 1.0)/(0 - dd)  # derivative of the second shape function
+        jdet  =  dd/2.0          
+        jaco  =  dd/2.0
+
+        gg   = gauss1d(3)
+        *ss, = map(shape1d,gg.pts)
+        der  = [s.der for s in ss]
+        *jj, = map(jaco1d,itertools.repeat([p1,p2]),der)
+
+        actgder = [ j.gder for j in jj]
+        actjdet = [ j.jdet for j in jj]
+        actjaco = [ j.jaco for j in jj]
+
+        self.assertAlmostEqual(gder1,actgder[0][0],      places=closeplaces,msg='gder1 failure in test_jaco1d')
+        self.assertAlmostEqual(gder2,actgder[0][1],      places=closeplaces,msg='gder2 failure in test_jaco1d')
+        self.assertAlmostEqual(jdet, actjdet[0],         places=closeplaces,msg='jdet  failure in test_jaco1d')
+        self.assertAlmostEqual(jaco, actjaco[0][0][0],   places=closeplaces,msg='jdet  failure in test_jaco1d')
+
+
     def test_jaco2d(self):
-        pass
-         
+
+        p1 = np.asarray((1,2,0));
+        p2 = np.asarray((6,4,0));
+        p3 = np.asarray((3,7,0));
+        p4 = np.asarray((-3,4,0));
+
+        gg   = gauss2d(3);
+        *ss, = map(shape2d,gg.pts)
+        der  = [s.der for s in ss]
+        *jj, = map(jaco2d,itertools.repeat([p1,p2,p3,p4]),der)
+
+
+    def test_jaco2d_with_parent_domain(self):
+        for ipoint in range(1,maxinteg):
+            p1 = np.asarray((-1,-1,0));
+            p2 = np.asarray(( 1,-1,0));
+            p3 = np.asarray(( 1, 1,0));
+            p4 = np.asarray((-1, 1,0));
+
+            gg   = gauss2d(ipoint);
+            *ss, = map(shape2d,gg.pts)
+            der  = [s.der for s in ss]
+            *jj, = map(jaco2d,itertools.repeat([p1,p2,p3,p4]),der)
+
+            expjdet = [1]*ipoint*ipoint
+            
+            
     def test_parent_interp_consistency(self):
         # test 1d interpolation with scalars, vectors and matrices
         # set the nodes to a constant value (scalar/vector/matrix), and see

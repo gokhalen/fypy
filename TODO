@@ -1,5 +1,4 @@
--2)  Integration of shapefunction derivatives
--1)  Interpolation routines writing and testing
+-1)  More testing for jaco1d
  0)  Annotations/Type hints  for gausslegendre.py 
  1)  Jacobians, and its unittests
  2)  Calculate jacobian in parent element routines for 2d
