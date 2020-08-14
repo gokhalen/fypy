@@ -1,9 +1,10 @@
 import functools,numpy as np,unittest,itertools
 from typing import Callable,Tuple,Iterable
-closetol=1e-12
+closeatol=1e-12
+closertol=1e-12
 closeplaces=12
-npclose=functools.partial(np.allclose,rtol=0.0,atol=closetol)
-npclosertol=functools.partial(np.allclose,rtol=closetol,atol=0.0)
+npclose=functools.partial(np.allclose,rtol=closertol,atol=closeatol)
+#npclosertol=functools.partial(np.allclose,rtol=closetol,atol=0.0)
 
 def get_mismatch(aa,bb,closetol=1E-12):
    # if entries of aa and bb are off by an amount greater than closetol
@@ -75,7 +76,7 @@ class TestFyPy(unittest.TestCase):
    compare_test_func = functools.partialmethod(compare_test,truedata=None,data_supplied=False)
 
 
-   def compare_iterables(self,actout,expout,msg,rtol=closetol,atol=closetol,desc=''):
+   def compare_iterables(self,actout,expout,msg,rtol=closertol,atol=closeatol,desc=''):
       # a simple function to compare the contents of two iterables at all integration points
       # the contents are expected to be np.arrays or something that supports the np.allclose function
       # actout = actual output

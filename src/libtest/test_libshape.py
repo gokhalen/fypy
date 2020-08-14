@@ -213,13 +213,13 @@ class TestLibShape(TestFyPy):
             #    # breakpoint()
 
             msg = f'Consistency for 1d Jacobian determinant fails for {ipoint=} '
-            self.compare_iterables(actjdet,expjdet,msg=msg,rtol=closetol,atol=0.0,desc='integration point')
+            self.compare_iterables(actjdet,expjdet,msg=msg,rtol=closertol,atol=closeatol,desc='integration point')
 
             msg = f'Consistency for 1d Jacobian jacobian fails for {ipoint=} '
-            self.compare_iterables(actjaco,expjaco,msg=msg,rtol=closetol,atol=0.0,desc='integration point')
+            self.compare_iterables(actjaco,expjaco,msg=msg,rtol=closertol,atol=closeatol,desc='integration point')
             
             msg = f'Consistency for 1d Jacobian global derivatives fails for {ipoint=} '
-            self.compare_iterables(actgder,expgder,msg=msg,rtol=closetol,atol=0.0,desc='integration point ')
+            self.compare_iterables(actgder,expgder,msg=msg,rtol=closertol,atol=closeatol,desc='integration point ')
             
             # AssertionError must be raised when length of element is very small ( <1e-12 )
             self.assertRaises(AssertionError,jaco1d,[p1,p1],der)
@@ -276,9 +276,32 @@ class TestLibShape(TestFyPy):
             gg   = gauss2d(ipoint);
             *ss, = map(shape2d,gg.pts)
             der  = [s.der for s in ss]
+            # the following is a map. der yields shape function derivatives at the particular integration point
+            # der is 'iterable'
             *jj, = map(jaco2d,itertools.repeat([p1,p2,p3,p4]),der)
 
+            actjdet = [j.jdet for j in jj]
+            actjaco = [j.jaco for j in jj]
+            actgder = [j.gder for j in jj]
+
+            # i'm using deepcopy because I want to perturb values while not modifying other values in the list or linked values
             expjdet = [1]*ipoint*ipoint
+            expjaco = np.asarray([ [1.0, 0.0],[0.0, 1.0] ])
+            expjaco = [ copy.deepcopy(expjaco) for i in range(ipoint*ipoint)]# deep copy
+            expgder = copy.deepcopy(der)
+
+            #if ( ipoint == 4):
+            #    breakpoint()
+
+            msg = f'Consistency of jaco2d for jdet with input parent domain fails for {ipoint=} '
+            self.compare_iterables(actjdet,expjdet,msg=msg,rtol=closertol,atol=closeatol,desc='integration point ')
+
+            msg = f'Consistency of jaco2d for jaco with input parent domain fails for {ipoint=} '
+            self.compare_iterables(actjaco,expjaco,msg=msg,rtol=closertol,atol=closeatol,desc='integration point ')
+
+            msg = f'Consistency of jaco2d for gder with input parent domain fails for {ipoint=} '
+            self.compare_iterables(actgder,expgder,msg=msg,rtol=closertol,atol=closeatol,desc='integration point ')
+            
             
             
     def test_parent_interp_consistency(self):
@@ -325,8 +348,11 @@ class TestLibShape(TestFyPy):
             # if ( ( ipoint == 4 ) and ( idim  == 2 ) and ( ddim == 2 ) ):
             #    actout[2] += 1e-5
 
+            #if (( ipoint == 2 ) and (idim == 1) and ( ddim == 2)):
+            #    breakpoint()
+
             msg = f'Consistency for {idim}d parent interpolation with constant data fails for {ipoint=} {idim=} {ddim=} '
-            self.compare_iterables(actout,expout,msg=msg,rtol=closetol,atol=0.0,desc='integration point ')
+            self.compare_iterables(actout,expout,msg=msg,rtol=closertol,atol=closeatol,desc='integration point ')
 
     def test_parent_interp_1d(self):
         # integration points
@@ -339,7 +365,7 @@ class TestLibShape(TestFyPy):
         actout    = interp_parent(nodedata,ss)
         expout    = [8.393728532056468, -1.25,-10.893728532056468]
         msg = 'test_parent_interp_1d fails for scalar data '
-        self.compare_iterables(actout,expout,msg=msg,rtol=closetol,atol=0.0,desc='integration point ')
+        self.compare_iterables(actout,expout,msg=msg,rtol=closertol,atol=closeatol,desc='integration point ')
         
         # vector data
 
@@ -351,7 +377,7 @@ class TestLibShape(TestFyPy):
         out3     = np.asarray([ 6.456187190916169 , 0.1654737509655563])
         expout   = [out1,out2,out3]
         msg = 'test_parent_interp_1d fails for vector data '
-        self.compare_iterables(actout,expout,msg=msg,rtol=closetol,atol=0.0,desc='integration point ')
+        self.compare_iterables(actout,expout,msg=msg,rtol=closertol,atol=closeatol,desc='integration point ')
 
         # matrix data
 
@@ -364,7 +390,7 @@ class TestLibShape(TestFyPy):
         out3     = np.asarray([[2.2397183191718413, 1.9856850115866753],[1.4090832359028784, 1.6127016653792583]])
         expout   = [out1,out2,out3]
         msg = 'test_parent_interp_1d fails for matrix data '
-        self.compare_iterables(actout,expout,msg=msg,rtol=closetol,atol=0.0,desc='integration point ')
+        self.compare_iterables(actout,expout,msg=msg,rtol=closertol,atol=closeatol,desc='integration point ')
 
     def test_parent_interp_2d(self):
         npoint = 2
@@ -378,7 +404,7 @@ class TestLibShape(TestFyPy):
         out1     = 0.16867605983550216; out2=-1.1666437290040874; out3=2.496643729004088;out4=6.346323940164497
         expout   = [out1,out2,out3,out4]
         msg = 'test_parent_interp_2d fails for scalar data '
-        self.compare_iterables(actout,expout,msg=msg,rtol=closetol,atol=0.0,desc='integration point ')
+        self.compare_iterables(actout,expout,msg=msg,rtol=closertol,atol=closeatol,desc='integration point ')
         
         # vector interpolation
         d1 = np.asarray((1.23,0.259)); d2 = np.asarray((2.3,0.91));
@@ -392,7 +418,7 @@ class TestLibShape(TestFyPy):
         out4 = np.asarray([ 0.4998225016923001, -0.5292700044917551])
         expout  = [out1,out2,out3,out4]
         msg = 'test_parent_interp_2d fails for vector data '
-        self.compare_iterables(actout,expout,msg=msg,rtol=closetol,atol=0.0,desc='integration point ')
+        self.compare_iterables(actout,expout,msg=msg,rtol=closertol,atol=closeatol,desc='integration point ')
         
         # matrix interpolation
         d1 = np.asarray(( (121.0,-26.0),  (1.15, 0.5) ))
@@ -411,4 +437,4 @@ class TestLibShape(TestFyPy):
         expout  = [out1,out2,out3,out4]
         msg     = 'test_parent_interp_2d fails for matrix data '
         
-        self.compare_iterables(actout,expout,msg=msg,rtol=closetol,atol=0.0,desc='integration point ')
+        self.compare_iterables(actout,expout,msg=msg,rtol=closertol,atol=closeatol,desc='integration point ')
