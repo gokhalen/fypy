@@ -224,10 +224,10 @@ class TestLibShape(TestFyPy):
             # AssertionError must be raised when length of element is very small ( <1e-12 )
             self.assertRaises(AssertionError,jaco1d,[p1,p1],der)
 
-    def test_consistency_jaco2d(self):
+    def test_consistency_shift_jaco2d(self):
         for ipoint in range(1,maxinteg):
             # for this test we map an arbitrary rectangle to parent domain and compare global derivatives
-            # the global x and y axis must be parallel to the parent x any y axes
+            # the sides of the element defining  x and y axis must be parallel to the parent x any y axes
             # this is equivalent to saying the lower left point of the global domain should be 1,
             # lower right 2, upper right 3 and upper left 4
             
@@ -265,7 +265,7 @@ class TestLibShape(TestFyPy):
             x4 = p4[0]; y4=p4[1]
 
             expder = []
-            for p in pp:
+            for i,p in enumerate(pp):
                 x = p[0]; y = p[1]; z=p[2]
 
                 N1x = (    -1.0/(x2-x1) ) * ( (y4-y)/(y4-y1) )
@@ -273,16 +273,102 @@ class TestLibShape(TestFyPy):
                 N2x = (    -1.0/(x1-x2) ) * ( (y3-y)/(y3-y2) )
                 N2y = (  (x1-x)/(x1-x2) ) * (   -1.0/(y3-y2) )
                 N3x = (    -1.0/(x4-x3) ) * ( (y2-y)/(y2-y3) )
-                N3y = (  (x4-x)/(x4-x3) ) * (   -1.0/(y2-y3) )
+                N3y = (  (x4-x)/(x4-x3) ) * (   -1.0/(y2-y3) ) 
                 N4x = (    -1.0/(x3-x4) ) * ( (y1-y)/(y1-y4) )
                 N4y = (  (x3-x)/(x3-x4) ) * (   -1.0/(y1-y4) )
 
+                # sanity check, must fail
+                # if ( ipoint == 3  and i ==2 ):
+                #    N3x +=1e-6
+
                 tmp = np.asarray(( (N1x,N1y), (N2x,N2y), (N3x,N3y), (N4x,N4y)  ))
-                expder.append(tmp) 
+                expder.append(tmp)
+
+            msg = f'Checking global derivatives for jaco2d in test_consistency_shift_jaco2d {ipoint=} '
+            self.compare_iterables(actder,expder,msg=msg,rtol=closertol,atol=closeatol,desc='integration point ')
+
+    def test_consistency_rotation_shift_jaco2d(self):
+        # similar to test_consistency_shift_jaco2d but a rotation is added
+        # for this test we map an arbitrary rectangle to parent domain and compare global derivatives
+        # the sides of the element x and y axis  can be inclined to the global/parent x any y axes
+
+        for ipoint in range(1,maxinteg):
+            px = 16*np.random.rand(); py = 16*np.random.rand()
+            # px = 3.0; py = 4.0
+            
+            while True:
+                # generate random values of length and breadth, both non-zero
+                length  = abs(16*np.random.rand())
+                breadth = abs(16*np.random.rand())
+                if ( length != 0 and breadth != 0):
+                    break
+
+            #length  = 1.0
+            #breadth = 1.0 
+                
+            #theta = 0.0
+            # theta = 45.0*math.pi/180.0
+            theta = 90*np.random.rand()*math.pi/180.0
+            
+            # these are coordinates in the standard global frame of reference
+            p1 = np.asarray((px,py));
+            p2 = np.asarray((px+breadth,py));
+            p3 = np.asarray((px+breadth,py+length));
+            p4 = np.asarray((px,py+length))
+
+            ct = math.cos(theta); st = math.sin(theta)
+            Q  = np.asarray(( (ct,-st),(st,ct) ))
+            Qt = Q.T
+
+            # rotate the points
+            p1r = Q@p1 ; p2r = Q@p2 ; p3r = Q@p3 ; p4r = Q@p4
+
+            plist    = [p1,p2,p3,p4]
+            plistrot = [p1r,p2r,p3r,p4r]
+
+            # compute global derivatives via jaco2d
+            gg     = gauss2d(ipoint);
+            *ss,   = map(shape2d,gg.pts)
+            der    = [ s.der for s in ss ]
+            *jj,   = map(jaco2d,itertools.repeat(plistrot),der)
+            actder = [j.gder for j in jj]
+
+            # to create expected output, we are going to work in the rotated frame of reference
+            # and then rotate back to global
+            pp = interp_parent(plist,ss)
+
+            x1 = p1[0]; y1=p1[1]
+            x2 = p2[0]; y2=p2[1]
+            x3 = p3[0]; y3=p3[1]
+            x4 = p4[0]; y4=p4[1]
+
+            expder = []
+            
+            for p in pp:
+                x = p[0]; y = p[1]; 
+
+                N1x = (    -1.0/(x2-x1) ) * ( (y4-y)/(y4-y1) )
+                N1y = (  (x2-x)/(x2-x1) ) * (   -1.0/(y4-y1) )
+                N2x = (    -1.0/(x1-x2) ) * ( (y3-y)/(y3-y2) )
+                N2y = (  (x1-x)/(x1-x2) ) * (   -1.0/(y3-y2) )
+                N3x = (    -1.0/(x4-x3) ) * ( (y2-y)/(y2-y3) )
+                N3y = (  (x4-x)/(x4-x3) ) * (   -1.0/(y2-y3) ) 
+                N4x = (    -1.0/(x3-x4) ) * ( (y1-y)/(y1-y4) )
+                N4y = (  (x3-x)/(x3-x4) ) * (   -1.0/(y1-y4) )
+
+                N1x,N1y = Q@(N1x,N1y)
+                N2x,N2y = Q@(N2x,N2y)
+                N3x,N3y = Q@(N3x,N3y)
+                N4x,N4y = Q@(N4x,N4y)       
+                
+                tmp = np.asarray(( (N1x,N1y), (N2x,N2y), (N3x,N3y), (N4x,N4y)  ))
+                expder.append(tmp)
+                #breakpoint()
+
+            msg = f'Checking global derivatives for jaco2d in test_consistency_rotation_shift_jaco2d {ipoint=} '
+            self.compare_iterables(actder,expder,msg=msg,rtol=closertol,atol=closeatol,desc='integration point ')
 
                 
-                
-
     def test_jaco1d_general_element(self):
         # consider two points p1 = (1,2,7) and p2 = (5,3,11) and 3 integration points
         # check that jdet,gder,jaco are correct
