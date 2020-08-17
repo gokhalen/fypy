@@ -224,7 +224,66 @@ class TestLibShape(TestFyPy):
             # AssertionError must be raised when length of element is very small ( <1e-12 )
             self.assertRaises(AssertionError,jaco1d,[p1,p1],der)
 
-    def test_jaco1d(self):
+    def test_consistency_jaco2d(self):
+        for ipoint in range(1,maxinteg):
+            # for this test we map an arbitrary rectangle to parent domain and compare global derivatives
+            # the global x and y axis must be parallel to the parent x any y axes
+            # this is equivalent to saying the lower left point of the global domain should be 1,
+            # lower right 2, upper right 3 and upper left 4
+            
+            # get location of lower left corner
+            px = 1024*np.random.rand()
+            py = 1024*np.random.rand()
+            
+            while True:
+                # generate random values of length and breadth, both non-zero
+                length  = abs(1024*np.random.rand())
+                breadth = abs(1024*np.random.rand())
+                if ( length != 0 and breadth != 0):
+                    break
+
+            p1 = np.asarray((px,py,0));
+            p2 = np.asarray((px+breadth,py,0));
+            p3 = np.asarray((px+breadth,py+length,0));
+            p4 = np.asarray((px,py+length,0))
+
+            plist = [p1,p2,p3,p4]
+
+            # get global derivatives using jaco2d
+            gg     = gauss2d(ipoint);
+            *ss,   = map(shape2d,gg.pts)
+            der    = [ s.der for s in ss ]
+            *jj,   = map(jaco2d,itertools.repeat(plist),der)
+            actder = [j.gder for j in jj]
+
+            # interpolate nodal coords to get x,y,z at all integration points
+            pp = interp_parent(plist,ss)
+
+            x1 = p1[0]; y1=p1[1]
+            x2 = p2[0]; y2=p2[1]
+            x3 = p3[0]; y3=p3[1]
+            x4 = p4[0]; y4=p4[1]
+
+            expder = []
+            for p in pp:
+                x = p[0]; y = p[1]; z=p[2]
+
+                N1x = (    -1.0/(x2-x1) ) * ( (y4-y)/(y4-y1) )
+                N1y = (  (x2-x)/(x2-x1) ) * (   -1.0/(y4-y1) )
+                N2x = (    -1.0/(x1-x2) ) * ( (y3-y)/(y3-y2) )
+                N2y = (  (x1-x)/(x1-x2) ) * (   -1.0/(y3-y2) )
+                N3x = (    -1.0/(x4-x3) ) * ( (y2-y)/(y2-y3) )
+                N3y = (  (x4-x)/(x4-x3) ) * (   -1.0/(y2-y3) )
+                N4x = (    -1.0/(x3-x4) ) * ( (y1-y)/(y1-y4) )
+                N4y = (  (x3-x)/(x3-x4) ) * (   -1.0/(y1-y4) )
+
+                tmp = np.asarray(( (N1x,N1y), (N2x,N2y), (N3x,N3y), (N4x,N4y)  ))
+                expder.append(tmp) 
+
+                
+                
+
+    def test_jaco1d_general_element(self):
         # consider two points p1 = (1,2,7) and p2 = (5,3,11) and 3 integration points
         # check that jdet,gder,jaco are correct
         p1 = np.asarray((1,2,7));         p2 = np.asarray((5,3,11));
@@ -253,8 +312,9 @@ class TestLibShape(TestFyPy):
         self.assertAlmostEqual(jaco, actjaco[0][0][0],   places=closeplaces,msg='jdet  failure in test_jaco1d')
 
 
-    def test_jaco2d(self):
-
+    def test_jaco2d_general_element(self):
+        
+        # this is the element
         p1 = np.asarray((1,2,0));
         p2 = np.asarray((6,4,0));
         p3 = np.asarray((3,7,0));
@@ -264,6 +324,27 @@ class TestLibShape(TestFyPy):
         *ss, = map(shape2d,gg.pts)
         der  = [s.der for s in ss]
         *jj, = map(jaco2d,itertools.repeat([p1,p2,p3,p4]),der)
+
+        # check at first integration point: jdet,jaco,gder
+        j00 =  2.5563508326896285
+        j01 = -1.9436491673103709
+        j10 =  1.0563508326896291
+        j11 =  1.0563508326896291
+
+        expjaco    = np.asarray(( (j00,j01 )  , (j10,j11 ) ))
+        expjdet    = np.linalg.det(expjaco)
+        tmp        = np.asarray(( ( j11, -j01)  ,(-j10 , j00) ))
+        expjacoinv = (1.0/expjdet)*tmp
+        expgder    = ss[0].der@expjacoinv
+        
+        msg = f'Compare general element jaco2d: jdet '
+        self.compare_iterables([jj[0].jdet],[expjdet],msg=msg,rtol=closertol,atol=closeatol,desc='integration point ')
+
+        msg = f'Compare general element jaco2d: jaco '
+        self.compare_iterables([jj[0].jaco],[expjaco],msg=msg,rtol=closertol,atol=closeatol,desc='integration point ')
+
+        msg = f'Compare general element jaco2d: gder '
+        self.compare_iterables([jj[0].gder],[expgder],msg=msg,rtol=closertol,atol=closeatol,desc='integration point ')
 
 
     def test_jaco2d_with_parent_domain(self):
@@ -277,7 +358,7 @@ class TestLibShape(TestFyPy):
             *ss, = map(shape2d,gg.pts)
             der  = [s.der for s in ss]
             # the following is a map. der yields shape function derivatives at the particular integration point
-            # der is 'iterable'
+            # der is 'iterable', exhausting der terminates the map
             *jj, = map(jaco2d,itertools.repeat([p1,p2,p3,p4]),der)
 
             actjdet = [j.jdet for j in jj]

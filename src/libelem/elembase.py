@@ -7,9 +7,9 @@ class ElemBase():
         # eltype: element type, string
         # ninteg: integration points, integer
         # gdofn : number of global degrees of freedom in the system
-        self.eltype  = eltype
-        self.ninteg  = ninteg
-        self.gdofn   = gdofn
+        self.eltype   = eltype
+        self.ninteg   = ninteg
+        self.gdofn    = gdofn
         
         # create sparse matrix and rhs
         self.kmatrix = sparse.coo_matrix((gdofn,gdofn),dtype='float64')
