@@ -13,10 +13,10 @@ def integrate_parent(finteg:Callable,gauss:Iterable,shape:Iterable,data:Iterable
     #         arguments: (gauss point, parent shape function and parent derivative at that point,other necessary data) 
     #         first 3 arguments of integrate are passed too finteg
     
-    # gauss: Iterable yielding Integ namedtuple corresponding to each integration point
-    # shape: Iterable yielding Shape namedtuple corresponding to each integration point
-    # data : Iterable yielding data for each integration point
-    # jac  : Iterable yielding Jaco for each integration point
+    # gauss : Iterable yielding Integ namedtuple corresponding to each integration point
+    # shape : Iterable yielding Shape namedtuple corresponding to each integration point
+    # data  : Iterable yielding data for each integration point
+    # jdet  : Iterable yielding Jacobian determinant for each integration point
 
     # wtjac is not passed to finteg because it does not need it to evaluate functions
     

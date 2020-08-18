@@ -35,7 +35,7 @@ def jaco1d(pp:np.ndarray,shpder:np.ndarray)->Jaco:
     # number of jacobian determinants is the number of integration points
     jdet = ll/2.0
 
-    assert ( jdet > zerotol ), f'jdet in is < {zerotol} in jaco1d'
+    assert ( jdet > zerotol ), f'jdet in jaco1d is < {zerotol} in jaco1d'
 
     jaco = np.asarray( ((jdet,),) )
 
@@ -79,6 +79,5 @@ def jaco2d(pp:Iterable,shpder)->Jaco:
 def jaco3d():
     pass
     
-
 
 

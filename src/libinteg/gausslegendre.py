@@ -13,8 +13,6 @@ from scipy.special import roots_legendre
 from typing import Callable,Any
 import itertools,functools, math, numpy as np
 
-closetol=1e-12
-
 # npoints is number of Gauss-Legendre integration points
 
 Integ = namedtuple('Integ',['pts','wts'])

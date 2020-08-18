@@ -72,6 +72,16 @@ def shape3d(xi:TF3):
     pass
 
 
+def getshape(ndim):
+    assert ( ndim >= 1)
+
+    if ( ndim == 1):
+        return shape1d
+    
+    if ( ndim == 2):
+        return shape2d
+
+
 def interp_parent(data,shp):
     #  interpolation over the parent domain
     # data: iterable yielding data at element nodes interpolated.

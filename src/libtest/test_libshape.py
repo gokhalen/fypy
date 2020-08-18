@@ -292,9 +292,14 @@ class TestLibShape(TestFyPy):
         # for this test we map an arbitrary rectangle to parent domain and compare global derivatives
         # the sides of the element x and y axis  can be inclined to the global/parent x any y axes
 
+        # we generate a rectangle with sides parallel to global x and y axis. Rotate it by a random angle.
+        # compute global derivatives, and jdet using jaco2d
+        # compute derivatives analytically in a rotated frame of reference
+        # map these derivatives from the rotated frame of reference to the global frame of reference
+
         for ipoint in range(1,maxinteg):
+            # lower left corner
             px = 16*np.random.rand(); py = 16*np.random.rand()
-            # px = 3.0; py = 4.0
             
             while True:
                 # generate random values of length and breadth, both non-zero
@@ -303,10 +308,6 @@ class TestLibShape(TestFyPy):
                 if ( length != 0 and breadth != 0):
                     break
 
-            #length  = 1.0
-            #breadth = 1.0 
-                
-            #theta = 0.0
             # theta = 45.0*math.pi/180.0
             theta = 90*np.random.rand()*math.pi/180.0
             
@@ -327,14 +328,17 @@ class TestLibShape(TestFyPy):
             plistrot = [p1r,p2r,p3r,p4r]
 
             # compute global derivatives via jaco2d
-            gg     = gauss2d(ipoint);
-            *ss,   = map(shape2d,gg.pts)
-            der    = [ s.der for s in ss ]
-            *jj,   = map(jaco2d,itertools.repeat(plistrot),der)
-            actder = [j.gder for j in jj]
+            gg      = gauss2d(ipoint);
+            *ss,    = map(shape2d,gg.pts)
+            der     = [ s.der for s in ss ]
+            *jj,    = map(jaco2d,itertools.repeat(plistrot),der)
+            actder  = [j.gder for j in jj]
+            actjdet = [j.jdet for j in jj]
 
             # to create expected output, we are going to work in the rotated frame of reference
-            # and then rotate back to global
+            # and then rotate back to global. Note that in the rotated frame of reference,
+            # the coordinates are the original unrotated coordinates.
+            
             pp = interp_parent(plist,ss)
 
             x1 = p1[0]; y1=p1[1]
@@ -342,7 +346,7 @@ class TestLibShape(TestFyPy):
             x3 = p3[0]; y3=p3[1]
             x4 = p4[0]; y4=p4[1]
 
-            expder = []
+            expder = [] ; expjdet = []
             
             for p in pp:
                 x = p[0]; y = p[1]; 
@@ -363,10 +367,18 @@ class TestLibShape(TestFyPy):
                 
                 tmp = np.asarray(( (N1x,N1y), (N2x,N2y), (N3x,N3y), (N4x,N4y)  ))
                 expder.append(tmp)
-                #breakpoint()
+                expjdet.append(length*breadth/4.0)
 
             msg = f'Checking global derivatives for jaco2d in test_consistency_rotation_shift_jaco2d {ipoint=} '
             self.compare_iterables(actder,expder,msg=msg,rtol=closertol,atol=closeatol,desc='integration point ')
+
+            # sanity test, must fail
+            #if ( ipoint == 4 ):
+            #    expjdet[2] += 1e-6
+                
+            msg = f'Checking jacodets for jaco2d in test_consistency_rotation_shift_jaco2d {ipoint=} '
+            self.compare_iterables(actjdet,expjdet,msg=msg,rtol=closertol,atol=closeatol,desc='integration point ')
+
 
                 
     def test_jaco1d_general_element(self):
