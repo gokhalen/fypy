@@ -15,8 +15,8 @@ class LinElas1D(ElemBase):
         
         super().__init__(ninteg=ninteg,gdofn=gdofn)
 
-
-    def stiffness_kernel(self):
+    @staticmethod    
+    def stiffness_kernel(gausspts,shape,data):
         # this has to return a matrix
         return np.asarray( ( (1,0), (0,1)  ))
 
@@ -26,8 +26,13 @@ class LinElas1D(ElemBase):
         pass
     
     def compute_stiffness(self):
-        self.estiff = integrate_parent()
+        self.estiff = integrate_parent(self.stiffness_kernel,self.gg,self.ss,self.propinterp,self.jj)
+
+    def compute_rhs_body_force():
         pass
 
-    def compute_rhs():
+    def compute_rhs_traction():
+        pass
+
+    def compute_rhs_dirichlet():
         pass

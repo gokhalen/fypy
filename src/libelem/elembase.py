@@ -19,14 +19,15 @@ class ElemBase():
         self.rhs     = sparse.coo_matrix((gdofn,1),dtype='float64')
 
         # move to super
-        self.edofn    = self.elnodes*self.elndofn     # total dofn in this element
-        self._coord   = np.zeros(self.elnodes*3).reshape(self.elnodes,3)
-        self.erhs     = np.zeros(self.edofn)          # rhs vector                                                                
-        self.estiff   = np.zeros(self.edofn*self.edofn).reshape(self.edofn,self.edofn)          # element stiffness matrix
-        self._prop     = np.zeros(self.elnodes*self.nprop).reshape(self.elnodes,self.nprop)      # stiffness
-        self.bf       = np.zeros(self.elnodes*self.ndime).reshape(self.elnodes,self.ndime)      # body force
-        self.trac     = np.zeros(self.elnodes*self.elndofn).reshape(self.elnodes,self.elndofn)  # traction
-        self.dirich   = np.zeros(self.elnodes*self.elndofn).reshape(self.elnodes,self.elndofn)  # dirichlet data
+        self.edofn      = self.elnodes*self.elndofn     # total dofn in this element
+        self._coord     = np.zeros(self.elnodes*3).reshape(self.elnodes,3)
+        self.erhs       = np.zeros(self.edofn)          # rhs vector                                                                
+        self.estiff     = np.zeros(self.edofn*self.edofn).reshape(self.edofn,self.edofn)          # element stiffness matrix
+        self._prop      = np.zeros(self.elnodes*self.nprop).reshape(self.elnodes,self.nprop)      # stiffness
+        self.bf         = np.zeros(self.elnodes*self.ndime).reshape(self.elnodes,self.ndime)      # body force
+        self.trac       = np.zeros(self.elnodes*self.elndofn).reshape(self.elnodes,self.elndofn)  # traction
+        self.dirich     = np.zeros(self.elnodes*self.elndofn).reshape(self.elnodes,self.elndofn)  # dirichlet data
+        
 
         # data processing arrays, id,ien
         # ideqn(local node number, local dofn) -> global equation number
@@ -65,7 +66,7 @@ class ElemBase():
 
     def interp_prop(self):
         # interpolate properties at integration points
-        propinterp = interp_parent(self.prop,self.ss) 
+        self.propinterp = interp_parent(self.prop,self.ss) 
         
     def getjaco(self):
         fjaco = eval(f'jaco{self.ndime}d')
