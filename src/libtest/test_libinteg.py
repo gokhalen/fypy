@@ -11,20 +11,20 @@ class TestLibInteg(TestFyPy):
 
     # methods to check integration points and integration routines
     @staticmethod
-    def func1_N1(gausspt,shp,data):
+    def func1_N1(gausspt,shp,jac,data):
         # retuns N1 in the parent domain
         # gausspt: gauss point at which function evaluation has to be done
         # shp: shape functions and their derivatives at the gauss point
         return shp.shape[0]
     @staticmethod
-    def func1_N2(gausspt,shp,data):
+    def func1_N2(gausspt,shp,jac,data):
         # retuns N2 in the parent domain
         # gausspt: gauss point at which function evaluation has to be done
         # shp: shape functions and their derivatives at the gauss point
         return shp.shape[1]
 
     @staticmethod
-    def func1_N1N2(gausspt,shp,data):
+    def func1_N1N2(gausspt,shp,jac,data):
         # retuns N1N2 in the parent domain
         # gausspt: gauss point at which function evaluation has to be done
         # shp: shape functions and their derivatives at the gauss point
@@ -33,29 +33,29 @@ class TestLibInteg(TestFyPy):
         return shp.shape[0]*shp.shape[1]
     
     @staticmethod
-    def func1_1(gausspt,shp,data):
+    def func1_1(gausspt,shp,jac,data):
         return 1
 
     @staticmethod
-    def func1_N1xN2x(gausspt,shp,data):
+    def func1_N1xN2x(gausspt,shp,jac,data):
         # for 1D, the derivatives of the shape functions are constants (-0.5,0.5)
         return shp.der[0][0]*shp.der[1][0]
 
     @staticmethod
-    def func1_N1x(gausspt,shp,data):
+    def func1_N1x(gausspt,shp,jac,data):
         return shp.der[0][0]
 
     @staticmethod
-    def func1_N2x(gausspt,shp,data):
+    def func1_N2x(gausspt,shp,jac,data):
         return shp.der[1][0]
 
     @staticmethod
-    def func1_v_N1_N2(gausspt,shp,data):
+    def func1_v_N1_N2(gausspt,shp,jac,data):
         # test vector integration the _v_ stands for vector
         return np.asarray((shp.shape[0],shp.shape[1]))
 
     @staticmethod
-    def func1_m_1(gausspt,shp,data):
+    def func1_m_1(gausspt,shp,jac,data):
         # _m_ stands for matrix
         # return [[ N1,N2],[N2,N1]]
         a00 = shp.shape[0]; a01 = shp.shape[1]
@@ -64,7 +64,7 @@ class TestLibInteg(TestFyPy):
         return np.asarray( ((a00,a01),(a10,a11)) )
 
     @staticmethod
-    def func1_m_2(gausspt,shp,data):
+    def func1_m_2(gausspt,shp,jac,data):
         # quadratic matrix function - needs 2 pt integration
         # return [[ N1*N1,N1*N21],[N2*N1,N2*N2]]
     
@@ -74,40 +74,40 @@ class TestLibInteg(TestFyPy):
         return np.asarray( ((a00,a01),(a10,a11)) )
     
     @staticmethod
-    def func2_N1(gausspt,shp,data):
+    def func2_N1(gausspt,shp,jac,data):
         return shp.shape[0]
 
     @staticmethod
-    def func2_N2(gausspt,shp,data):
+    def func2_N2(gausspt,shp,jac,data):
         return shp.shape[1]
 
     @staticmethod
-    def func2_N3(gausspt,shp,data):
+    def func2_N3(gausspt,shp,jac,data):
         return shp.shape[2]
 
     @staticmethod
-    def func2_N4(gausspt,shp,data):
+    def func2_N4(gausspt,shp,jac,data):
         return shp.shape[3]
 
     @staticmethod
-    def func2_N1pN2pN3pN4(gausspt,shp,data):
+    def func2_N1pN2pN3pN4(gausspt,shp,jac,data):
         return (shp.shape[0] + shp.shape[1] + shp.shape[2] + shp.shape[3])
 
     @staticmethod
-    def func2_N1N3(gausspt,shp,data):
+    def func2_N1N3(gausspt,shp,jac,data):
         return (shp.shape[0]*shp.shape[2])
 
     @staticmethod
-    def func2_N1N2(gausspt,shp,data):
+    def func2_N1N2(gausspt,shp,jac,data):
         return (shp.shape[0]*shp.shape[1])
 
     @staticmethod
-    def func2_N1N2N3(gausspt,shp,data):
+    def func2_N1N2N3(gausspt,shp,jac,data):
         # third degree function in each direction, can be integrated using 2pt rule
         return (shp.shape[0]*shp.shape[1]*shp.shape[2])
 
     @staticmethod
-    def func2_v_N1x_N2y_N3x_N4y(gausspt,shp,data):
+    def func2_v_N1x_N2y_N3x_N4y(gausspt,shp,jac,data):
         # 1pt integration
         n1x = shp.der[0][0]
         n2y = shp.der[1][1]

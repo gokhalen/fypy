@@ -16,11 +16,11 @@ def integrate_parent(finteg:Callable,gauss:Iterable,shape:Iterable,data:Iterable
     # gauss : Iterable yielding Integ namedtuple corresponding to each integration point
     # shape : Iterable yielding Shape namedtuple corresponding to each integration point
     # data  : Iterable yielding data for each integration point
-    # jdet  : Iterable yielding Jacobian determinant for each integration point
+    # jac   : Iterable yielding Jacobian namedtuple for each integration point
 
     # wtjac is not passed to finteg because it does not need it to evaluate functions
     
-    funcgauss = map(finteg,gauss.pts,shape,data)
+    funcgauss = map(finteg,gauss.pts,shape,jac,data)
     
     *wtjac,   = ( gg*jj.jdet  for gg,jj in zip(gauss.wts,jac) )
     
