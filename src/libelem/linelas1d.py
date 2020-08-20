@@ -57,4 +57,4 @@ class LinElas1D(ElemBase):
         return np.zeros(self.edofn)
 
     def rhs_point_force(self):
-        return copy.deepcopy(self._pforce.reshape(self.edofn))
+        return copy.deepcopy((self.pforce).reshape(self.edofn))

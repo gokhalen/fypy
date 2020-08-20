@@ -9,6 +9,8 @@ from ..libshape.jacobian import *
 
 class ElemBase():
 
+    # MAKE slots disallow adding new variables
+
     def __init__(self,ninteg=3,gdofn=None):
         
         # eltype: element type, string
@@ -17,19 +19,19 @@ class ElemBase():
         self.ninteg = ninteg
         self.gdofn  = gdofn
         
-        # create sparse matrix and rhs
+        # create sparse matrix - declared because these will be put into __slots__ in the future
         self.kmatrix = sparse.coo_matrix((gdofn,gdofn),dtype='float64')
         self.rhs     = sparse.coo_matrix((gdofn,1),dtype='float64')
-
+        
 
         self.edofn      = self.elnodes*self.elndofn                                               # total dofn in this element
-
 
         self.erhs       = np.zeros(self.edofn)                                                    # rhs vector
         self.estiff     = np.zeros(self.edofn*self.edofn).reshape(self.edofn,self.edofn)          # element stiffness matrix
         self.erhsbf     = np.zeros(self.edofn)                                                    # rhs vector contribution of body force
         self.erhsdir    = np.zeros(self.edofn)                                                    # rhs vector for dirichlet bc
         self.erhstrac   = np.zeros(self.edofn)                                                    # rhs vector for traction data
+        self.erhspf     = np.zeros(self.edofn)
 
         self._coord     = np.zeros(self.elnodes*3).reshape(self.elnodes,3)                        # coordinates
         self._prop      = np.zeros(self.elnodes*self.nprop).reshape(self.elnodes,self.nprop)      # stiffness property
@@ -42,13 +44,45 @@ class ElemBase():
         # ideqn(local node number, local dofn) -> global equation number
         # ideqn >= 0 if (node,dofn) is not a dirichlet dofn -1 other wise
         self._ideqn  = np.zeros(self.elnodes*self.elndofn).reshape(self.elnodes,self.elndofn)
-        # isbc = 0 if not a bc, 1 if a dirichlet bc and 2 if a traction bc
+        # isbc = 0 if not a bc, 1 if a dirichlet bc and 2 if a traction bc and 3 if a point force bc
         self._isbc   = np.zeros(self.elnodes*self.elndofn).reshape(self.elnodes,self.elndofn)
 
         # get gauss and shape
         self.gg   = getgauss(ndim=self.ndime,npoints=self.ninteg)
         fshape    = getshape(ndim=self.ndime)
         *self.ss, = map(fshape,self.gg.pts)
+
+    @property
+    def isbc(self):
+        return self._isbc
+
+    @isbc.setter
+    def isbc(self,x):
+        msg = f'In elembase.py isbc not of the right shape, expected ({self.elnodes},{self.elndofn}) got {x.shape}'
+        assert ( x.shape == (self.elnodes,self.elndofn) ),msg
+
+        boolcmp = np.all( x >=0 ) and np.all(x <=3 )
+        assert boolcmp, 'Invalid entries in isbc'
+        
+        self._isbc = copy.deepcopy(x)
+
+    @property
+    def ideqn(self):
+        return self._ideqn
+
+    @ideqn.setter
+    def ideqn(self,x):
+        # check for right shape
+        
+        msg = f'In elembase.py ideqn not of the right shape, expected ({self.elnodes},{self.elndofn}) got {x.shape}'
+        assert ( x.shape == (self.elnodes,self.elndofn) ),msg
+
+        # check that all entries are less than gdofn
+        boolcmp = np.all( x < self.gdofn )
+        assert boolcmp, 'All entries for ideqn are not less than gdofn'
+        
+        self._ideqn = copy.deepcopy(x)
+    
 
     @property
     def dirich(self):
@@ -122,17 +156,49 @@ class ElemBase():
         # rhs contribution comes from 1) body force 2) traction 3) dirichlet
         # body force contribution
         self.erhsbf    = integrate_parent(self.rhs_bf_kernel,self.gg,self.ss,self.bfinterp,self.jj)
-        self.erhsdir   = -self.estiff*((self.dirich).reshape(self.edofn))
+        
+        self.erhsdir   = -self.estiff@((self.dirich).reshape(self.edofn))
+        
         # all elements  will implement rhs_trac_kernel; continuum elements will return zero; boundary elements will do the correct integration
         self.erhstrac  = integrate_parent(self.rhs_trac_kernel,self.gg,self.ss,self.tracinterp,self.jj)
+        
         # all element implement rhs_point_force method; continuum elements will do the right thing; boundary elements will return zero.
         # for 1d elasticity, the traction boundary condition is implemented as a point force
-        self.erhspoint = self.rhs_point_force()
+        self.erhspf    = self.rhs_point_force()
 
-        self.erhs = self.erhsbf + self.erhsdir + self.erhstrac + self.erhspoint
+        self.erhs = self.erhsbf + self.erhsdir + self.erhstrac + self.erhspf
 
+    def setdata(self,coord=None,prop=None,bf=None,pforce=None,dirich=None,trac=None,ideqn=None,isbc=None):
+        self.coord  = coord;
+        self.prop   = prop
+        self.bf     = bf
+        self.pforce = pforce
+        self.dirich = dirich
+        self.trac   = trac
+        self.ideqn  = ideqn
+        self.isbc   = isbc
+
+    def create_global_Kf(self):
+        # rhs
+        row  = self.ideqn.ravel(order='C')
+        data = self.erhs.ravel(order='C')
+
+        # filter erhs to exclude dirichlet data
+        frow     = [ row[i]  for i,r in enumerate(row) if r >=0 ]
+        fdata    = [ data[i] for i,r in enumerate(row) if r >=0 ]
+        fcols    = np.zeros(len(fdata))
+        tt       = (fdata,(frow,fcols))
+        self.rhs = sparse.coo_matrix(tt,shape=(self.gdofn,1),dtype='float64')
+
+        # filter estiff to exclude dirichlet data
+
+    def compute(self):
         
-
-    
+        self.getjaco()
+        self.interp()
+        self.compute_stiffness()
+        self.compute_rhs()
+        self.create_global_Kf()
+        #make stiffness, rhs and global stiffness and rhs
         
 
