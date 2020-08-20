@@ -1,4 +1,4 @@
-import numpy as np
+import numpy as np, copy
 from .elembase import *
 from ..libinteg.integrate import *
 
@@ -51,3 +51,10 @@ class LinElas1D(ElemBase):
         b2 = N2*bf[0]
         
         return np.asarray ( (b1,b2) )
+
+    def rhs_trac_kernel(self,gausspts,shape,jaco,bf):
+        # continuum elements do not implement traction. 
+        return np.zeros(self.edofn)
+
+    def rhs_point_force(self):
+        return copy.deepcopy(self._pforce.reshape(self.edofn))
