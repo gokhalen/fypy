@@ -116,7 +116,7 @@ class TestLibElem(TestFyPy):
         kk      = 1
         ninteg  = 3
         gdofn   = (nelem+1)-2
-        rightbc = 2
+        rightbc = 4
 
         # prepare exact solution
         xcoord   = np.linspace(start,end,nelem+1)
