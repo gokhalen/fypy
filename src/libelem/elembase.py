@@ -20,8 +20,10 @@ class ElemBase():
         self.gdofn  = gdofn
         
         # create sparse matrix - declared because these will be put into __slots__ in the future
-        self.kmatrix = sparse.coo_matrix((gdofn,gdofn),dtype='float64')
-        self.rhs     = sparse.coo_matrix((gdofn,1),dtype='float64')
+        data =(0,); row = (0,); col = (0,)
+        tt = (data,(row,col))
+        self.kmatrix = sparse.coo_matrix(tt,shape=(gdofn,gdofn),dtype='float64')
+        self.rhs     = sparse.coo_matrix(tt,shape=(gdofn,1),dtype='float64')
         
 
         self.edofn      = self.elnodes*self.elndofn                                               # total dofn in this element
@@ -46,7 +48,7 @@ class ElemBase():
         self._ideqn  = np.zeros(self.elnodes*self.elndofn).reshape(self.elnodes,self.elndofn)
         # isbc = 0 if not a bc, 1 if a dirichlet bc and 2 if a traction bc and 3 if a point force bc
         self._isbc   = np.zeros(self.elnodes*self.elndofn).reshape(self.elnodes,self.elndofn)
-
+        
         # get gauss and shape
         self.gg   = getgauss(ndim=self.ndime,npoints=self.ninteg)
         fshape    = getshape(ndim=self.ndime)
@@ -63,6 +65,10 @@ class ElemBase():
 
         boolcmp = np.all( x >=0 ) and np.all(x <=3 )
         assert boolcmp, 'Invalid entries in isbc'
+
+        # if all entries are 1 then boolcmp is true, not boolcmp is false and assertion fails
+        boolcmp = np.all( x == 1 )
+        assert (not boolcmp),'All entries are constrained'
         
         self._isbc = copy.deepcopy(x)
 
@@ -77,9 +83,13 @@ class ElemBase():
         msg = f'In elembase.py ideqn not of the right shape, expected ({self.elnodes},{self.elndofn}) got {x.shape}'
         assert ( x.shape == (self.elnodes,self.elndofn) ),msg
 
-        # check that all entries are less than gdofn
+        # check that all entries are less than gdofn  and >=0
         boolcmp = np.all( x < self.gdofn )
         assert boolcmp, 'All entries for ideqn are not less than gdofn'
+
+        # if all entries are less than zero, then boolcmp is true
+        boolcmp = np.all( x < 0 )
+        assert (not boolcmp),'All entries in ideqn are less than zero'
         
         self._ideqn = copy.deepcopy(x)
     
@@ -186,11 +196,21 @@ class ElemBase():
         # filter erhs to exclude dirichlet data
         frow     = [ row[i]  for i,r in enumerate(row) if r >=0 ]
         fdata    = [ data[i] for i,r in enumerate(row) if r >=0 ]
-        fcols    = np.zeros(len(fdata))
-        tt       = (fdata,(frow,fcols))
+        fcol     = np.zeros(len(fdata))
+        tt       = (fdata,(frow,fcol))
         self.rhs = sparse.coo_matrix(tt,shape=(self.gdofn,1),dtype='float64')
 
         # filter estiff to exclude dirichlet data
+        fdata = []; frow=[]; fcol=[]
+        for ii,irow in enumerate(row):
+            for jj,icol in enumerate(row):
+                if ( irow >=0 and icol >=0 ):
+                    fdata.append(self.estiff[ii][jj])
+                    frow.append(irow)
+                    fcol.append(icol)
+
+        tt = (fdata,(frow,fcol))
+        self.kmatrix = sparse.coo_matrix(tt,shape=(self.gdofn,self.gdofn),dtype='float64')
 
     def compute(self):
         

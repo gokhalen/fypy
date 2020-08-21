@@ -1,7 +1,10 @@
 import numpy as np
+import scipy.sparse.linalg
 
 from ..libelem.linelas1d import *
 from ..libelem.linelas2d import *
+from scipy import sparse
+
 from .test import *
 
 
@@ -15,9 +18,10 @@ class TestLibElem(TestFyPy):
         # for the global problem, once we get there
         # u(2.3) = 1.7 and traction at (5.15) = 2.1
         # body force = 2x^2
-        
-        
-        elas1d = LinElas1D(ninteg=3,gdofn=10)
+
+        gdofn  = 10
+        ninteg = 3
+        elas1d = LinElas1D(ninteg=ninteg,gdofn=gdofn)
         coord = np.zeros(6,dtype='float64').reshape(2,3)
         
         coord[0][0] =  2.3;  coord[0][1]=0.0; coord[0][2] = 0.0;
@@ -72,7 +76,113 @@ class TestLibElem(TestFyPy):
         msg = 'In test_linelas1d traction force rhs comparison for linelas1d fails'
         self.compare_iterables(elas1d.erhstrac,exptrac,msg=msg,desc='')
                                       
+        # check if filtering stiffness/rhs is done properly
+        # same data as before, but ideqn changed
+
+        ideqn[0][0] = -1; ideqn[1][0] = 4
+
+        # check matrix we should get just one entry = [[kk]]
+        elas1d.setdata(coord=coord,prop=prop,bf=bf,pforce=pforce,dirich=dirich,trac=trac,ideqn=ideqn,isbc=isbc)
+        elas1d.compute()
+
+        data = (kk,); row = (4,); col=(4,)
+        tt   = (data,(row,col))
+        expstiff = sparse.coo_matrix(tt,shape=(gdofn,gdofn),dtype='float64')
+
+        error = scipy.sparse.linalg.norm(expstiff-elas1d.kmatrix) 
+        self.assertTrue(error < closeatol,msg='Global stiffness matrices do not match in test_linelas1d')
+
+        # check right hand side
+        # the total right hand side is
+        tmprhs = expbf + exppf + expdir + exptrac
+        data = (tmprhs[1],); row = (4,); col=(0,)
+        tt = (data,(row,col))
+        exprhs = sparse.coo_matrix(tt,shape=(gdofn,1),dtype='float64')
+
+        error = scipy.sparse.linalg.norm(exprhs-elas1d.rhs)
+        self.assertTrue(error < closeatol,msg='Global rhs vectors do not match in test_linelas1d')
 
 
+    def test_linelas1d_generated_1(self):
+        
+        # solve a problem
+        # d/dx(du/dx) = 0, u(0)=0 and u(1) = 2
+        # exact answer: u(x) = x
+        
+        start   = 0.0
+        end     = 1.0
+        nelem   = 10
+        hh      = (end-start)/nelem
+        kk      = 1
+        ninteg  = 3
+        gdofn   = (nelem+1)-2
+        rightbc = 2
+
+        # prepare exact solution
+        xcoord   = np.linspace(start,end,nelem+1)
+        
+        rows     = list(range(0,nelem+1-2))
+        cols     = [0]*(nelem+1-2)
+        sol      = rightbc*xcoord[1:-1]
+        tt       = (sol,(rows,cols))
+                         
+        expsol   = sparse.coo_matrix(tt,shape=(gdofn,1),dtype='float64')
+
+        # create global force and matrix
+        data =(0,); row = (0,); col = (0,); tt = (data,(row,col))
+        grhs     = sparse.coo_matrix(tt,shape=(gdofn,1),dtype='float64')
+        gkmatrix = sparse.coo_matrix(tt,shape=(gdofn,gdofn),dtype='float64')
+
+
+        # quantities which do not change from element to element are outside the loop
+        coord  = np.zeros(6,dtype='float64').reshape(2,3)
+        prop   = np.zeros(2,dtype='float64').reshape(2,1)
+        prop[0][0] = kk; prop[1][0] = kk
+        bf     = np.zeros(2,dtype='float64').reshape(2,1)
+        pforce = np.zeros(2,dtype='float64').reshape(2,1)
+        # dirich changes from element to element
+        trac   = np.zeros(2,dtype='float64').reshape(2,1)
+
+        ideqnarray = list(range(-1,nelem))
+        ideqnarray[-1] = -1
+
+        
+        elas1d = LinElas1D(ninteg=ninteg,gdofn=gdofn)
+        
+        for i in range(nelem):
+            coord[0][0] = xcoord[i]
+            coord[1][0] = xcoord[i+1]
+
+            dirich = np.zeros(2,dtype='float64').reshape(2,1)
+            if ( i == (nelem -1)):
+                dirich[0][0] = 0
+                dirich[1][0] = rightbc
+
+            ideqn = np.zeros(2).reshape(2,1)
+            ideqn[0][0] = ideqnarray[i]
+            ideqn[1][0] = ideqnarray[i+1]
+
+            isbc = np.zeros(2).reshape(2,1)
+
+            if (i == 0):
+                isbc[0][0] = 1
+
+            if (i == (nelem-1)):
+                isbc[1][0] = 1
+                
+            elas1d.setdata(coord=coord,prop=prop,bf=bf,pforce=pforce,dirich=dirich,trac=trac,ideqn=ideqn,isbc=isbc)
+            elas1d.compute()
+
+            gkmatrix += elas1d.kmatrix
+            grhs     += elas1d.rhs
+
+        x,exitCode = scipy.sparse.linalg.bicg(gkmatrix,grhs.todense())
+        print('solution= ',x)
+
+    def test_linelas2d(self):
+        pass
+
+    def test_linelastrac2d(self):
+        pass
         
 
