@@ -33,27 +33,27 @@ class FyPyMesh():
             print(f'Unknown value ({stf=}) for stf defaulting to homogeneous')
             self.stf = 'homogeneous'
 
-        self.coordx = np.linspace(self.start,self.end,self.nelem)
-        self.coordy = np.zeros(self.coordx.shape)
-        self.coordz = np.zeros(self.coordx.shape)
+        coordx = np.linspace(self.start,self.end,self.nelem)
+        coordy = np.zeros(coordx.shape)
+        coordz = np.zeros(coordx.shape)
 
-        *self.coord, = zip(self.coordx,self.coordy,self.coordz) 
+        *self.coord, = zip(coordx,coordy,coordz) 
         self.conn    = [ [ii,ii+1] for ii in range(1,self.nelem+1)]
-        self.prop    = [ [self.stfmin] for i in self.coordx ]
+        self.prop    = [ [self.stfmin] for i in self.coord ]
 
         # set dirichlet bcs
-        self.dirich        = [ [0]*self.ndofn for i in self.coordx ]
+        self.dirich        = [ [0]*self.ndofn for i in self.coord ]
         self.dirich[0][0]  = 1.0
         self.dirich[-1][0] = 2.0
-        self.trac          = [ [0]*self.ndofn for i in self.coordx ]
-        self.pf            = [ [0]*self.ndofn for i in self.coordx ]
+        self.trac          = [ [0]*self.ndofn for i in self.coord ]
+        self.pf            = [ [0]*self.ndofn for i in self.coord ]
         
 
         # set body force
-        self.bf = [ [0]*self.ndofn for i in self.coordx ]
+        self.bf = [ [0]*self.ndofn for i in self.coord ]
 
         if self.stf == 'inclusion':
-            self.prop = [ [self.stfmax] if ( (x >=0.4*self.length) and (x <= 0.6*self.length)) else [self.stfmin] for x in self.coordx ]
+            self.prop = [ [self.stfmax] if ( (x >=0.4*self.length) and (x <= 0.6*self.length)) else [self.stfmin] for x in coordx ]
 
     def create_mesh_2d(self,length=10.0,breadth=10.0,nelemx=10,nelemy=10,stf='homogeneous',filename='data.in'):
         assert (length > 0),'length has to be greater than 0'
