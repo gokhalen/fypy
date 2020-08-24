@@ -127,6 +127,7 @@ class TestLibElem(TestFyPy):
         tt       = (sol,(rows,cols))
                          
         expsol   = sparse.coo_matrix(tt,shape=(gdofn,1),dtype='float64')
+        expsol   = expsol.reshape(gdofn,)
 
         # create global force and matrix
         data =(0,); row = (0,); col = (0,); tt = (data,(row,col))
@@ -176,8 +177,106 @@ class TestLibElem(TestFyPy):
             gkmatrix += elas1d.kmatrix
             grhs     += elas1d.rhs
 
-        x,exitCode = scipy.sparse.linalg.bicg(gkmatrix,grhs.todense())
-        print('solution= ',x)
+        x,exitCode = scipy.sparse.linalg.bicg(gkmatrix,grhs.todense(),atol=closeatol)
+
+        # breakpoint()
+
+        error = np.linalg.norm(expsol-x) 
+        self.assertTrue(error < closeatol,msg='Solutions do not match in test_linelas1d_generated_1')
+
+    def test_linelas1d_generated_2(self):
+        # solve a problem with body force
+
+        # d/dx ( du/dx ) = x  on (0,1) and u(0)=0 and u(1)=0
+        # u = (x^3 - x)/6
+
+        # the weak form in hughes' book is obtained by weakening
+        # the problem being solved here is u,xx + l = 0  u(0)=q1 and u(1) = q2
+        # a(w,u) = (w,l) + boundary terms
+
+        # therefore body force l = -x
+
+
+        start   = 0.0
+        end     = 1.0
+        nelem   = 10
+        hh      = (end-start)/nelem
+        kk      = 1
+        ninteg  = 3
+        gdofn   = (nelem+1)-2
+        rightbc = 0
+
+        # prepare exact solution
+        xcoord   = np.linspace(start,end,nelem+1)
+        
+        rows     = list(range(0,nelem+1-2))
+        cols     = [0]*(nelem+1-2)
+        sol      = [ ((x**3)-x)/6.0 for x in xcoord[1:-1]]
+        tt       = (sol,(rows,cols))
+                         
+        expsol   = sparse.coo_matrix(tt,shape=(gdofn,1),dtype='float64')
+        expsol   = expsol.reshape(gdofn,)
+
+        # create global force and matrix
+        data =(0,); row = (0,); col = (0,); tt = (data,(row,col))
+        grhs     = sparse.coo_matrix(tt,shape=(gdofn,1),dtype='float64')
+        gkmatrix = sparse.coo_matrix(tt,shape=(gdofn,gdofn),dtype='float64')
+
+
+        # quantities which do not change from element to element are outside the loop
+        coord  = np.zeros(6,dtype='float64').reshape(2,3)
+        prop   = np.zeros(2,dtype='float64').reshape(2,1)
+        prop[0][0] = kk; prop[1][0] = kk
+        pforce = np.zeros(2,dtype='float64').reshape(2,1)
+        # dirich changes from element to element
+        trac   = np.zeros(2,dtype='float64').reshape(2,1)
+
+        ideqnarray = list(range(-1,nelem))
+        ideqnarray[-1] = -1
+
+        
+        elas1d = LinElas1D(ninteg=ninteg,gdofn=gdofn)
+        
+        for i in range(nelem):
+            coord[0][0] = xcoord[i]
+            coord[1][0] = xcoord[i+1]
+
+            dirich = np.zeros(2,dtype='float64').reshape(2,1)
+            if ( i == (nelem -1)):
+                dirich[0][0] = 0
+                dirich[1][0] = rightbc
+
+            ideqn = np.zeros(2).reshape(2,1)
+            ideqn[0][0] = ideqnarray[i]
+            ideqn[1][0] = ideqnarray[i+1]
+
+            isbc = np.zeros(2).reshape(2,1)
+
+            bf       = np.zeros(2,dtype='float64').reshape(2,1)
+            x0       = coord[0][0]; x1 = coord[1][0];
+            bf[0][0] = -x0  ; bf[1][0] = -x1; 
+            
+            if (i == 0):
+                isbc[0][0] = 1
+
+            if (i == (nelem-1)):
+                isbc[1][0] = 1
+                
+            elas1d.setdata(coord=coord,prop=prop,bf=bf,pforce=pforce,dirich=dirich,trac=trac,ideqn=ideqn,isbc=isbc)
+            elas1d.compute()
+
+            gkmatrix += elas1d.kmatrix
+            grhs     += elas1d.rhs
+
+        x,exitCode = scipy.sparse.linalg.bicg(gkmatrix,grhs.todense(),atol=closeatol)
+        # print('solution= ',x,'expected solution=',expsol,'rhs=',grhs.todense())
+        error = np.linalg.norm(expsol-x) 
+        self.assertTrue(error < closeatol,msg='Solutions do not match in test_linelas1d_generated_1')
+        
+
+    def test_linelas1d_generated_3(self):
+        # solve a problem with traction (point force)
+        pass
 
     def test_linelas2d(self):
         pass
