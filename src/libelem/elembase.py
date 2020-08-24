@@ -37,7 +37,7 @@ class ElemBase():
 
         self._coord     = np.zeros(self.elnodes*3).reshape(self.elnodes,3)                        # coordinates
         self._prop      = np.zeros(self.elnodes*self.nprop).reshape(self.elnodes,self.nprop)      # stiffness property
-        self._bf        = np.zeros(self.elnodes*self.ndime).reshape(self.elnodes,self.elndofn)    # body force property
+        self._bf        = np.zeros(self.elnodes*self.elndofn).reshape(self.elnodes,self.elndofn)    # body force property
         self._trac      = np.zeros(self.elnodes*self.elndofn).reshape(self.elnodes,self.elndofn)  # traction propery
         self._dirich    = np.zeros(self.elnodes*self.elndofn).reshape(self.elnodes,self.elndofn)  # dirichlet data
         self._pforce    = np.zeros(self.elnodes*self.elndofn).reshape(self.elnodes,self.elndofn)  # point force data

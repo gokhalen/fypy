@@ -3,6 +3,8 @@ import scipy.sparse.linalg
 
 from ..libelem.linelas1d import *
 from ..libelem.linelas2d import *
+from ..libelem.linelastrac2d import *
+
 from scipy import sparse
 
 from .test import *
@@ -351,8 +353,7 @@ class TestLibElem(TestFyPy):
             grhs     += elas1d.rhs
 
         x,exitCode = scipy.sparse.linalg.bicg(gkmatrix,grhs.todense(),atol=closeatol)
-        # print('solution= ',x,'expected solution=',expsol)
-        # breakpoint()
+
         error = np.linalg.norm(expsol-x) 
         self.assertTrue(error < closeatol,msg='Solutions do not match in test_linelas1d_generated_1')
 
@@ -361,6 +362,7 @@ class TestLibElem(TestFyPy):
         pass
 
     def test_linelastrac2d(self):
+        trac2d = LinElasTrac2D(ninteg=3,gdofn=10)
         pass
         
 
