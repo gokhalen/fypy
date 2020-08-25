@@ -1,5 +1,5 @@
 # A quick and dirty 1d,2d-mesh generator
-import sys;
+import sys,json;
 import numpy as np;
 
 class FyPyMesh():
@@ -8,13 +8,12 @@ class FyPyMesh():
     def __init__(self,):
         pass
 
-    def create_mesh_1d(self,start=0.0,end=1.0,nelem=10,stf='homogeneous',filename='data.in'):
+    def create_mesh_1d(self,start=0.0,end=1.0,nelem=10,stf='homogeneous'):
         self.start    = start
         self.end      = end
         self.length   = self.end - self.start
         self.nelem    = nelem
         self.stf      = stf
-        self.filename = filename
         self.stfmin   = 1
         self.stfmax   = 5
 
@@ -22,6 +21,7 @@ class FyPyMesh():
         self.ninteg   = 3
         self.nprop    = 1
         self.ndofn    = 1
+        self.ndime    = 1
 
         # derived data
         self.nnodes   = self.nelem  + 1
@@ -33,9 +33,8 @@ class FyPyMesh():
             print(f'Unknown value ({stf=}) for stf defaulting to homogeneous')
             self.stf = 'homogeneous'
 
-        self.nodelist = [*range(1,self.nnodes+1)]
 
-        coordx = np.linspace(self.start,self.end,self.nelem)
+        coordx = np.linspace(self.start,self.end,self.nelem+1)
         coordy = np.zeros(coordx.shape)
         coordz = np.zeros(coordx.shape)
 
@@ -49,6 +48,12 @@ class FyPyMesh():
         
         self.prop    = [ [self.stfmin] for i in self.coord ]
 
+        self.ideqn   = [ [0]*self.ndofn for i in self.coord]
+
+        # set the first and last ideqn to positive for dirichlet
+        self.ideqn[0][0]  = -1
+        self.ideqn[-1][0] = -1
+ 
         # set dirichlet bcs
         self.dirich        = [ [0]*self.ndofn for i in self.coord ]
         self.dirich[0][0]  = 1.0
@@ -63,7 +68,7 @@ class FyPyMesh():
         if self.stf == 'inclusion':
             self.prop = [ [self.stfmax] if ( (x >=0.4*self.length) and (x <= 0.6*self.length)) else [self.stfmin] for x in coordx ]
 
-    def create_mesh_2d(self,length=10.0,breadth=10.0,nelemx=10,nelemy=10,stf='homogeneous',bctype='dirich',filename='data.in'):
+    def create_mesh_2d(self,length=10.0,breadth=10.0,nelemx=10,nelemy=10,stf='homogeneous',bctype='dirich'):
         assert (length > 0),'length has to be greater than 0'
         assert (breadth > 0),'breadth has to be greater than 0'
         
@@ -74,18 +79,25 @@ class FyPyMesh():
         nnodey = nelemy + 1
         
         # data needed for write_mesh
-        self.filename = filename
         self.nelem    = nelemx*nelemy
         if ( bctype == 'trac'): self.nelem += nelemx  # if traction elements, increase nlelem
         self.nnodes   = nnodex*nnodey
         self.ninteg   = 3
         self.ndofn    = 2
         self.nprop    = 2
+        self.ndime    = 1
         
+        # parameters 
+        self.stfmin   = 1
+        self.stfmax   = 5
+
+        qdirich = -1
+        qtrac   = -1
         
         # node numbers increase by 1 in the y direction by nodey in the x-direction
         # node numbers are defined implicitly.
-        
+
+        # create coords
         self.coord=[]
         xx = xstart; yy =ystart; zz=0.0
         for ix in range(1,nnodex+1):
@@ -96,8 +108,8 @@ class FyPyMesh():
             xx += dx
             yy  = ystart
 
+        # create connectivity
         self.conn   = []
-
         for ix in range(1,nelemx+1):
             for iy in range(1,nelemy+1):
                 # global element number
@@ -109,6 +121,7 @@ class FyPyMesh():
                 n4  = n1 + 1
                 self.conn.append([n1,n2,n3,n4,'linelas2d'])
 
+        # add traction elements if necessary
         if ( bctype == 'trac' ):
             n1 = nnodey
             n2 = n1 + nnodey
@@ -118,14 +131,45 @@ class FyPyMesh():
                 self.conn.append([n2,n1,'linelastrac2d'])
                 n1 += nnodey
                 n2 += nnodey
-                
-        
-        self.prop   = []
-        self.dirich = []
-        self.bf     = []
-        self.trac   = []
-        self.pf     = []
 
+        # create properties
+        self.prop   = []; xmid = length/2.0; ymid = breadth/2.0; rad = length*0.2
+        for x,y,z in self.coord:
+            dist = (x-xmid)**2 + (y-ymid)**2
+            dist = dist**0.5
+            mu = self.stfmin; lam = self.stfmin;
+            
+            if ( stf=='inclusion' and ( dist < rad ) ):
+                mu = self.stfmax; lam =self.stfmax
+
+            self.prop.append([lam,mu])
+
+        # create ideqn and dirichlet bc
+        self.ideqn  = [ [0]*self.ndofn for i in self.coord]
+        self.dirich = [ [0]*self.ndofn for i in self.coord]
+
+        # create lower boundary dirichlet condition
+        # first the x-condition on the first node
+        self.ideqn[0][0]  = -1;
+        self.dirich[0][0] = 0.0;
+        # then the y conditions on the lower boundary
+        for i in range(1,(self.nnodes-nnodey+1)+1,nnodey):
+            self.ideqn[i-1][1]  = -1
+            self.dirich[i-1][1] = 0.0
+
+        if (bctype == 'dirich'):
+            for i in range(nnodey,self.nnodes+1,nnodey):
+                self.ideqn[i-1][1]  = -1
+                self.dirich[i-1][1] = qdirich
+            
+        
+        self.bf   = [ [0]*self.ndofn for i in self.coord ]
+        self.pf   = [ [0]*self.ndofn for i in self.coord ]
+        self.trac = [ [0]*self.ndofn for i in self.coord ]
+
+        if (bctype == 'trac'):
+            for i in range(nnodey,self.nnodes+1,nnodey):
+                self.trac[i-1][1] = qtrac
 
     def write_field(self,field_name,data,fout):
         fout.write('$'+field_name+'\n')
@@ -136,32 +180,62 @@ class FyPyMesh():
             fout.write('\n')
         fout.write('$'+field_name+'\n')
 
-    def write_mesh(self):
+    def write_mesh(self,filename='data.in'):
         # this code should be independent of dimension
-        
-        with open(self.filename,'w') as fout:
+        with open(filename,'w') as fout:
             fout.write('# fypy mesh generator\n')
 
 
             # some global data
             fout.write('nelem='+str(self.nelem)+' nnodes='+str(self.nnodes)+' ninteg='+str(self.ninteg)+
-                       ' ndofn='+str(self.ndofn)+ ' nprop='+str(self.nprop)+'\n')
+                       ' ndofn='+str(self.ndofn)+ ' nprop='+str(self.nprop)+' ndime='+str(self.ndime)+'\n')
             
             # write fields
             self.write_field('coord',self.coord,fout)
             self.write_field('conn',self.conn,fout)
             self.write_field('prop',self.prop,fout)
+            self.write_field('ideqn',self.ideqn,fout)
             self.write_field('dirich',self.dirich,fout)
             self.write_field('bf',self.bf,fout)
             self.write_field('trac',self.trac,fout)
             self.write_field('pf',self.pf,fout)
-           
 
-    def read_mesh(self,filename):
-        # should be independent of dimension
+    def json_dump(self,filename='data.json'):
+        dd = { 'nelem':self.nelem,
+               'nnodes':self.nnodes,
+               'ninteg':self.ninteg,
+               'ndofn':self.ndofn,
+               'nprop':self.nprop,
+               'ndime':self.ndime,
+               'coord':self.coord,
+               'conn':self.conn,
+               'prop':self.prop,
+               'ideqn':self.ideqn,
+               'dirich':self.dirich,
+               'bf':self.bf,
+               'trac':self.trac,
+               'pf':self.pf
+             }
+        with open(filename,'w') as fout:
+            json.dump(dd,fout,indent=4)
+
+    def json_read(self,filename='data.json'):
+        with open(filename,'r') as fin:
+            jj=json.load(fin)
+
+        # recreate mesh data structure
+        for key,value in jj.items():
+            setattr(self,key,value)
+
+    def initmesh(self):
+        # create gdofn
+        self.gdofn = self.nnodes*self.ndofn
         
-        pass
-
+        for ii in self.ideqn:
+            for i in ii:
+                if ( i < 0 ):
+                    self.gdofn -=1
+            
 
 
 

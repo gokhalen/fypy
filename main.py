@@ -7,19 +7,30 @@ Created on Fri Jul 17 19:31:21 2020
 
 import sys,os
 
-from src.libshape import *
-from src.libutil import *
+from src.libshape          import *
+from src.libutil           import *
+from src.libmesh.fypymesh  import *
 
 if __name__ == '__main__':
-    print('Executing fypy/main.py')
+    print('FYnite elements in PYthon ...executing fypy/main.py ')
+    
+    # check if atleast one argument (apart from the name) is supplied
+    if ( len(sys.argv) < 2):
+        print('Usage: main.py <meshfile>')
+        sys.exit(1)
+    
+    meshfile=sys.argv[1]
+        
+    # create mesh object 
+    fypymesh = FyPyMesh();
+    fypymesh.json_read(meshfile)
+    fypymesh.initmesh()
+    # create stiffness matrix and rhs
+        
+    # then solve
 
-    output_prefix = ''
-    if ( len(sys.argv) == 3):
-        output_prefix = sys.argv[2]
+    # then create output data
 
-    print(output_prefix)
-    outfilename  = output_prefix + '/data.out'
-    with open(outfilename,'w') as f:
-        f.write('Dummy data')
+    # create output files
     
 
