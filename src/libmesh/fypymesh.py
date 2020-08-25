@@ -25,7 +25,7 @@ class FyPyMesh():
 
         # derived data
         self.nnodes   = self.nelem  + 1
-        self.gdofn    = self.nnodes - 2   # we're typically solving a dirichlet conditions at both end points
+
 
         assert (end > start),f'{end=} should be greater than {start=}'
         
@@ -33,12 +33,20 @@ class FyPyMesh():
             print(f'Unknown value ({stf=}) for stf defaulting to homogeneous')
             self.stf = 'homogeneous'
 
+        self.nodelist = [*range(1,self.nnodes+1)]
+
         coordx = np.linspace(self.start,self.end,self.nelem)
         coordy = np.zeros(coordx.shape)
         coordz = np.zeros(coordx.shape)
 
-        *self.coord, = zip(coordx,coordy,coordz) 
+        *self.coord, = zip(coordx,coordy,coordz)
         self.conn    = [ [ii,ii+1] for ii in range(1,self.nelem+1)]
+        
+        # add element type to conn
+        for cc in self.conn:
+            cc.append('linelas1d')
+
+        
         self.prop    = [ [self.stfmin] for i in self.coord ]
 
         # set dirichlet bcs
@@ -55,12 +63,68 @@ class FyPyMesh():
         if self.stf == 'inclusion':
             self.prop = [ [self.stfmax] if ( (x >=0.4*self.length) and (x <= 0.6*self.length)) else [self.stfmin] for x in coordx ]
 
-    def create_mesh_2d(self,length=10.0,breadth=10.0,nelemx=10,nelemy=10,stf='homogeneous',filename='data.in'):
+    def create_mesh_2d(self,length=10.0,breadth=10.0,nelemx=10,nelemy=10,stf='homogeneous',bctype='dirich',filename='data.in'):
         assert (length > 0),'length has to be greater than 0'
         assert (breadth > 0),'breadth has to be greater than 0'
         
-        xstart  = 0.0; xend = xstart + length
-        ystart  = 0.0; yend = ystart + breadth
+        xstart  = 0.0; xend = xstart + length ; dx = length  / nelemx 
+        ystart  = 0.0; yend = ystart + breadth; dy = breadth / nelemy
+
+        nnodex  = nelemx + 1;
+        nnodey = nelemy + 1
+        
+        # data needed for write_mesh
+        self.filename = filename
+        self.nelem    = nelemx*nelemy
+        if ( bctype == 'trac'): self.nelem += nelemx  # if traction elements, increase nlelem
+        self.nnodes   = nnodex*nnodey
+        self.ninteg   = 3
+        self.ndofn    = 2
+        self.nprop    = 2
+        
+        
+        # node numbers increase by 1 in the y direction by nodey in the x-direction
+        # node numbers are defined implicitly.
+        
+        self.coord=[]
+        xx = xstart; yy =ystart; zz=0.0
+        for ix in range(1,nnodex+1):
+            for iy in range(1,nnodey+1):
+                inode = nnodey*(ix-1) + iy
+                self.coord.append((xx,yy,zz))
+                yy += dy
+            xx += dx
+            yy  = ystart
+
+        self.conn   = []
+
+        for ix in range(1,nelemx+1):
+            for iy in range(1,nelemy+1):
+                # global element number
+                ielem = (ix-1)*nelemy + iy
+                # need to get lower left node (n1)
+                n1  =  (ix-1)*nnodey + iy
+                n2  = n1 + nnodey
+                n3  = n2 + 1
+                n4  = n1 + 1
+                self.conn.append([n1,n2,n3,n4,'linelas2d'])
+
+        if ( bctype == 'trac' ):
+            n1 = nnodey
+            n2 = n1 + nnodey
+            for ix in range(nelemx*nelemy+1,self.nelem+1):
+                # notice n1 and n2 is reversed; the order in which they are
+                # traversed should be the same as in the quad element order
+                self.conn.append([n2,n1,'linelastrac2d'])
+                n1 += nnodey
+                n2 += nnodey
+                
+        
+        self.prop   = []
+        self.dirich = []
+        self.bf     = []
+        self.trac   = []
+        self.pf     = []
 
 
     def write_field(self,field_name,data,fout):
@@ -73,16 +137,15 @@ class FyPyMesh():
         fout.write('$'+field_name+'\n')
 
     def write_mesh(self):
-        
         # this code should be independent of dimension
+        
         with open(self.filename,'w') as fout:
             fout.write('# fypy mesh generator\n')
 
-            # need to add gdofn
+
             # some global data
             fout.write('nelem='+str(self.nelem)+' nnodes='+str(self.nnodes)+' ninteg='+str(self.ninteg)+
-                       ' ndofn='+str(self.ndofn)+ ' nprop='+str(self.nprop)+' gdofn='+str(self.gdofn)+
-                       '\n')
+                       ' ndofn='+str(self.ndofn)+ ' nprop='+str(self.nprop)+'\n')
             
             # write fields
             self.write_field('coord',self.coord,fout)
@@ -92,10 +155,11 @@ class FyPyMesh():
             self.write_field('bf',self.bf,fout)
             self.write_field('trac',self.trac,fout)
             self.write_field('pf',self.pf,fout)
-            # write point force
+           
 
     def read_mesh(self,filename):
         # should be independent of dimension
+        
         pass
 
 
