@@ -26,7 +26,7 @@ class ElemBase():
         self.rhs     = sparse.coo_matrix(tt,shape=(gdofn,1),dtype='float64')
         
 
-        self.edofn      = self.elnodes*self.elndofn                                               # total dofn in this element
+        self.edofn   = self.elnodes*self.elndofn                                               # total dofn in this element
 
         self.erhs       = np.zeros(self.edofn)                                                    # rhs vector
         self.estiff     = np.zeros(self.edofn*self.edofn).reshape(self.edofn,self.edofn)          # element stiffness matrix
@@ -92,8 +92,17 @@ class ElemBase():
         assert (not boolcmp),'All entries in ideqn are less than zero'
         
         self._ideqn = copy.deepcopy(x)
-    
 
+    # need to add a setter getter for pforce
+    @property
+    def pforce(self):
+        return self._pforce
+
+    @pforce.setter
+    def pforce(self,x):
+        msg = f'In elembase.py pforce not of the right shape, expected ({self.elnodes},{self.elndofn}) got {x.shape}'
+        self._pforce = copy.deepcopy(x)
+    
     @property
     def dirich(self):
         return self._dirich
@@ -213,7 +222,6 @@ class ElemBase():
         self.kmatrix = sparse.coo_matrix(tt,shape=(self.gdofn,self.gdofn),dtype='float64')
 
     def compute(self):
-        
         self.getjaco()
         self.interp()
         self.compute_stiffness()

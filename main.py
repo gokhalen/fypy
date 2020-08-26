@@ -25,7 +25,7 @@ if __name__ == '__main__':
     # create mesh object 
     fypymesh = FyPyMesh();
     fypymesh.json_read(meshfile)
-    fypymesh.initmesh()
+
     # create stiffness matrix and rhs
     kk,rhs = assembly(fypymesh)
         

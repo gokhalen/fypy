@@ -1,5 +1,5 @@
 # fypy mesh generator
-nelem=10 nnodes=11 ninteg=3 ndofn=1 nprop=1 ndime=1
+nelem=10 nnodes=11 ninteg=3 ndofn=1 nprop=1 ndime=1 gdofn=9
 $coord
 1 0.0 0.0 0.0 
 2 0.1 0.0 0.0 
@@ -41,14 +41,14 @@ $prop
 $ideqn
 1 -1 
 2 0 
-3 0 
-4 0 
-5 0 
-6 0 
-7 0 
-8 0 
-9 0 
-10 0 
+3 1 
+4 2 
+5 3 
+6 4 
+7 5 
+8 6 
+9 7 
+10 8 
 11 -1 
 $ideqn
 $dirich

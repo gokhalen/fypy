@@ -5,8 +5,20 @@ import numpy as np;
 class FyPyMesh():
     stflist = ['homogeneous','inclusion']
     
-    def __init__(self,):
+    def __init__(self):
         pass
+    
+    def make_eqn_no(self,ideqn):
+        # must be called after all negative numbers are set
+        ieqnno=0
+        for inode in range(0,self.nnodes):
+            for idofn in range(0,self.ndofn):
+                if (ideqn[inode][idofn] >= 0):
+                    ideqn[inode][idofn] = ieqnno
+                    ieqnno +=1
+
+        self.gdofn = ieqnno
+                    
 
     def create_mesh_1d(self,start=0.0,end=1.0,nelem=10,stf='homogeneous'):
         self.start    = start
@@ -50,9 +62,11 @@ class FyPyMesh():
 
         self.ideqn   = [ [0]*self.ndofn for i in self.coord]
 
-        # set the first and last ideqn to positive for dirichlet
+        # set the first and last ideqn to negative for dirichlet
         self.ideqn[0][0]  = -1
         self.ideqn[-1][0] = -1
+
+        self.make_eqn_no(self.ideqn)
  
         # set dirichlet bcs
         self.dirich        = [ [0]*self.ndofn for i in self.coord ]
@@ -161,7 +175,12 @@ class FyPyMesh():
             for i in range(nnodey,self.nnodes+1,nnodey):
                 self.ideqn[i-1][1]  = -1
                 self.dirich[i-1][1] = qdirich
-            
+                # make the rest of the equation numbers
+
+        # must be called after all negative numbers are set
+        self.make_eqn_no(self.ideqn)
+
+
         
         self.bf   = [ [0]*self.ndofn for i in self.coord ]
         self.pf   = [ [0]*self.ndofn for i in self.coord ]
@@ -188,7 +207,8 @@ class FyPyMesh():
 
             # some global data
             fout.write('nelem='+str(self.nelem)+' nnodes='+str(self.nnodes)+' ninteg='+str(self.ninteg)+
-                       ' ndofn='+str(self.ndofn)+ ' nprop='+str(self.nprop)+' ndime='+str(self.ndime)+'\n')
+                       ' ndofn='+str(self.ndofn)+ ' nprop='+str(self.nprop)+' ndime='+str(self.ndime)+
+                       ' gdofn='+str(self.gdofn)+'\n')
             
             # write fields
             self.write_field('coord',self.coord,fout)
@@ -200,13 +220,14 @@ class FyPyMesh():
             self.write_field('trac',self.trac,fout)
             self.write_field('pf',self.pf,fout)
 
-    def json_dump(self,filename='data.json'):
+    def json_dump(self,filename='data.in.json'):
         dd = { 'nelem':self.nelem,
                'nnodes':self.nnodes,
                'ninteg':self.ninteg,
                'ndofn':self.ndofn,
                'nprop':self.nprop,
                'ndime':self.ndime,
+               'gdofn':self.gdofn,
                'coord':self.coord,
                'conn':self.conn,
                'prop':self.prop,
@@ -227,14 +248,6 @@ class FyPyMesh():
         for key,value in jj.items():
             setattr(self,key,value)
 
-    def initmesh(self):
-        # create gdofn
-        self.gdofn = self.nnodes*self.ndofn
-        
-        for ii in self.ideqn:
-            for i in ii:
-                if ( i < 0 ):
-                    self.gdofn -=1
             
 
 
