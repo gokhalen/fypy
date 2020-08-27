@@ -73,7 +73,7 @@ class FyPyMesh():
         self.dirich[0][0]  = 1.0
         self.dirich[-1][0] = 2.0
         self.trac          = [ [0]*self.ndofn for i in self.coord ]
-        self.pf            = [ [0]*self.ndofn for i in self.coord ]
+        self.pforce            = [ [0]*self.ndofn for i in self.coord ]
         
 
         # set body force
@@ -183,7 +183,7 @@ class FyPyMesh():
 
         
         self.bf   = [ [0]*self.ndofn for i in self.coord ]
-        self.pf   = [ [0]*self.ndofn for i in self.coord ]
+        self.pforce   = [ [0]*self.ndofn for i in self.coord ]
         self.trac = [ [0]*self.ndofn for i in self.coord ]
 
         if (bctype == 'trac'):
@@ -218,7 +218,7 @@ class FyPyMesh():
             self.write_field('dirich',self.dirich,fout)
             self.write_field('bf',self.bf,fout)
             self.write_field('trac',self.trac,fout)
-            self.write_field('pf',self.pf,fout)
+            self.write_field('pf',self.pforce,fout)
 
     def json_dump(self,filename='data.in.json'):
         dd = { 'nelem':self.nelem,
@@ -235,7 +235,7 @@ class FyPyMesh():
                'dirich':self.dirich,
                'bf':self.bf,
                'trac':self.trac,
-               'pf':self.pf
+               'pforce':self.pforce
              }
         with open(filename,'w') as fout:
             json.dump(dd,fout,indent=4)

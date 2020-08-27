@@ -101,6 +101,7 @@ class ElemBase():
     @pforce.setter
     def pforce(self,x):
         msg = f'In elembase.py pforce not of the right shape, expected ({self.elnodes},{self.elndofn}) got {x.shape}'
+        assert (x.shape == (self.elnodes,self.elndofn)),msg
         self._pforce = copy.deepcopy(x)
     
     @property
@@ -187,7 +188,7 @@ class ElemBase():
 
         self.erhs = self.erhsbf + self.erhsdir + self.erhstrac + self.erhspf
 
-    def setdata(self,coord=None,prop=None,bf=None,pforce=None,dirich=None,trac=None,ideqn=None,isbc=None):
+    def setdata(self,coord=None,prop=None,bf=None,pforce=None,dirich=None,trac=None,ideqn=None):
         self.coord  = coord;
         self.prop   = prop
         self.bf     = bf
@@ -195,8 +196,8 @@ class ElemBase():
         self.dirich = dirich
         self.trac   = trac
         self.ideqn  = ideqn
-        self.isbc   = isbc
-
+        #self.isbc   = isbc
+        
     def create_global_Kf(self):
         # rhs
         row  = self.ideqn.ravel(order='C')
@@ -227,6 +228,6 @@ class ElemBase():
         self.compute_stiffness()
         self.compute_rhs()
         self.create_global_Kf()
-        #make stiffness, rhs and global stiffness and rhs
+
         
 

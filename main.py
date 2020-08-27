@@ -7,10 +7,10 @@ Created on Fri Jul 17 19:31:21 2020
 
 import sys
 
-from src.libshape          import *
-from src.libutil           import *
-from src.libmesh.fypymesh  import *
-from src.libassem.assembly import *
+
+from src.libmesh.fypymesh    import *
+from src.libassem.assembly   import *
+from src.libsolve.fypysolver import *
 
 if __name__ == '__main__':
     print('FYnite elements in PYthon ...executing fypy/main.py ')
@@ -29,8 +29,11 @@ if __name__ == '__main__':
     # create stiffness matrix and rhs
     kk,rhs = assembly(fypymesh)
         
-    # then solve
+    # then solver
+    solver    = FyPySolver(kk,rhs);
+    solution  = solver.solve('bicg') 
 
+    breakpoint()
     # then create output data
 
     # create output files

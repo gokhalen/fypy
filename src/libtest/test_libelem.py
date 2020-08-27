@@ -1,11 +1,12 @@
 import numpy as np
+
 import scipy.sparse.linalg
+from scipy import sparse
 
 from ..libelem.linelas1d import *
 from ..libelem.linelas2d import *
 from ..libelem.linelastrac2d import *
 
-from scipy import sparse
 
 from .test import *
 
@@ -49,7 +50,7 @@ class TestLibElem(TestFyPy):
         ideqn[0][0]  = 1;     ideqn[1][0]  = 4;
         
 
-        elas1d.setdata(coord=coord,prop=prop,bf=bf,pforce=pforce,dirich=dirich,trac=trac,ideqn=ideqn,isbc=isbc)
+        elas1d.setdata(coord=coord,prop=prop,bf=bf,pforce=pforce,dirich=dirich,trac=trac,ideqn=ideqn)
         elas1d.compute()
 
         # check stiffness matrix
@@ -84,7 +85,7 @@ class TestLibElem(TestFyPy):
         ideqn[0][0] = -1; ideqn[1][0] = 4
 
         # check matrix we should get just one entry = [[kk]]
-        elas1d.setdata(coord=coord,prop=prop,bf=bf,pforce=pforce,dirich=dirich,trac=trac,ideqn=ideqn,isbc=isbc)
+        elas1d.setdata(coord=coord,prop=prop,bf=bf,pforce=pforce,dirich=dirich,trac=trac,ideqn=ideqn)
         elas1d.compute()
 
         data = (kk,); row = (4,); col=(4,)
@@ -173,7 +174,7 @@ class TestLibElem(TestFyPy):
             if (i == (nelem-1)):
                 isbc[1][0] = 1
                 
-            elas1d.setdata(coord=coord,prop=prop,bf=bf,pforce=pforce,dirich=dirich,trac=trac,ideqn=ideqn,isbc=isbc)
+            elas1d.setdata(coord=coord,prop=prop,bf=bf,pforce=pforce,dirich=dirich,trac=trac,ideqn=ideqn)
             elas1d.compute()
 
             gkmatrix += elas1d.kmatrix
@@ -264,7 +265,7 @@ class TestLibElem(TestFyPy):
             if (i == (nelem-1)):
                 isbc[1][0] = 1
                 
-            elas1d.setdata(coord=coord,prop=prop,bf=bf,pforce=pforce,dirich=dirich,trac=trac,ideqn=ideqn,isbc=isbc)
+            elas1d.setdata(coord=coord,prop=prop,bf=bf,pforce=pforce,dirich=dirich,trac=trac,ideqn=ideqn)
             elas1d.compute()
 
             gkmatrix += elas1d.kmatrix
@@ -346,7 +347,7 @@ class TestLibElem(TestFyPy):
             if (i == (nelem-1)):
                 isbc[1][0] = 1
                 
-            elas1d.setdata(coord=coord,prop=prop,bf=bf,pforce=pforce,dirich=dirich,trac=trac,ideqn=ideqn,isbc=isbc)
+            elas1d.setdata(coord=coord,prop=prop,bf=bf,pforce=pforce,dirich=dirich,trac=trac,ideqn=ideqn)
             elas1d.compute()
 
             gkmatrix += elas1d.kmatrix
