@@ -248,8 +248,19 @@ class FyPyMesh():
         for key,value in jj.items():
             setattr(self,key,value)
 
-            
+    def make_solution_from_rhs(self,rhs):
+        self.solution = np.zeros(self.nnodes*self.ndofn).reshape(self.nnodes,self.ndofn)
 
+        for inode in range(1,self.nnodes+1):
+            for idofn in range(1,self.ndofn+1):
+                ieqnno = self.ideqn[inode-1][idofn-1]
+                if ( ieqnno >= 0):
+                    self.solution[inode-1][idofn-1] = rhs[ieqnno]
+                else:
+                    self.solution[inode-1][idofn-1] = self.dirich[inode-1][idofn-1]
+
+ 
+            
 
 
 

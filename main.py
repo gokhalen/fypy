@@ -33,7 +33,8 @@ if __name__ == '__main__':
     solver    = FyPySolver(kk,rhs);
     solution  = solver.solve('bicg') 
 
-    breakpoint()
+    fypymesh.make_solution_from_rhs(solution)
+
     # then create output data
 
     # create output files
