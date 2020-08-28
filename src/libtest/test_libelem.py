@@ -353,8 +353,8 @@ class TestLibElem(TestFyPy):
         # z-coordinate should be ignored
         coord[0] = 1.0,1.0,3.0  
         coord[1] = 3.0,1.0,3.0
-        coord[2] = 3.0,5.0,3.0
-        coord[3] = 1.0,5.0,3.0
+        coord[2] = 3.0,6.0,3.0
+        coord[3] = 1.0,6.0,3.0
 
         # lambda is first, then mu
         prop[0] = 2.0,1.0
@@ -363,10 +363,15 @@ class TestLibElem(TestFyPy):
         prop[3] = 2.0,1.0
 
         # body force
-        bf[0] = 1.0,2.0
-        bf[1] = 1.0,2.0
-        bf[2] = 1.0,2.0
-        bf[3] = 1.0,2.0
+        bf[0] = 1.0,2.5
+        bf[1] = 3.5,2.7
+        bf[2] = 1.2,5.0
+        bf[3] = 7.1,-2.0
+
+        # bf[0] = 1.0,0.0
+        # bf[1] = 0.0,0.0 
+        # bf[2] = 0.0,0.0 
+        # bf[3] = 0.0,0.0
 
         # point force
         pforce[0] = 7.0,   8.0
@@ -387,12 +392,39 @@ class TestLibElem(TestFyPy):
         ideqn1[2][0] = 1 ; ideqn1[2][1] = -1
         ideqn1[3][0] = 2 ; ideqn1[3][1] = -1
 
-        
+        # unconstrained ideqn
+        ideqn2[0] = 0,1
+        ideqn2[1] = 2,3        
+        ideqn2[2] = 4,5
+        ideqn2[3] = 6,7
+
+        b1 = 1.0*(10.0/9.0) + 3.5*(5.0/9)    + 1.2*(5.0/18.0) + 7.1*(5.0/9.0)
+        b2 = 2.5*(10.0/9.0) + 2.7*(5.0/9)    + 5.0*(5.0/18.0) - 2.0*(5.0/9.0)
+        b3 = 1.0*(5.0/9.0)  + 3.5*(10.0/9.0) + 1.2*(5.0/9.0)  + 7.1*(5.0/18.0)
+        b4 = 2.5*(5.0/9.0)  + 2.7*(10.0/9.0) + 5.0*(5.0/9.0)  - 2.0*(5.0/18.0)
+        b5 = 1.0*(5.0/18.0) + 3.5*(5.0/9.0)  + 1.2*(10.0/9.0) + 7.1*(5.0/9.0)
+        b6 = 2.5*(5.0/18.0) + 2.7*(5.0/9.0)  + 5.0*(10.0/9.0) - 2.0*(5.0/9.0)
+        b7 = 1.0*(5.0/9.0)  + 3.5*(5.0/18.0) + 1.2*(5.0/9.0)  + 7.1*(10.0/9.0)
+        b8 = 2.5*(5.0/9.0)  + 2.7*(5.0/18.0) + 5.0*(5.0/9.0)  - 2.0*(10.0/9.0)
+
+        # expected quantities
+        exppforce = np.asarray([7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0])
+        exptrac   = np.asarray([0.0,0.0,0.0,0.0 ,0.0 , 0.0, 0.0, 0.0])
+
+                
         elas2d = LinElas2D(ninteg=3,gdofn=10)
         elas2d.setdata(coord=coord,prop=prop,bf=bf,pforce=pforce,dirich=dirich1,trac=trac,ideqn=ideqn1)
         elas2d.compute()
+
         breakpoint()
-        
+
+        # check errors
+        error_pforce = np.linalg.norm(exppforce-elas2d.erhspf) 
+        self.assertTrue(error_pforce < closeatol,msg='pforce does not match in test_linelas2d')
+
+        error_trac = np.linalg.norm(exptrac - elas2d.erhstrac)
+        self.assertTrue(error_trac < closeatol,msg='trac does not match in test_linelas2d')
+
     def test_linelas2d_1_element(self):
         pass
 

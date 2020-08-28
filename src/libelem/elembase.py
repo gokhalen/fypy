@@ -26,6 +26,7 @@ class ElemBase():
         self.rhs     = sparse.coo_matrix(tt,shape=(gdofn,1),dtype='float64')
         
 
+        
         self.edofn   = self.elnodes*self.elndofn                                               # total dofn in this element
 
         self.erhs       = np.zeros(self.edofn)                                                    # rhs vector
@@ -228,6 +229,6 @@ class ElemBase():
         self.compute_stiffness()
         self.compute_rhs()
         self.create_global_Kf()
-
+        pass
         
 
