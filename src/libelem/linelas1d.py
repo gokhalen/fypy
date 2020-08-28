@@ -53,7 +53,7 @@ class LinElas1D(ElemBase):
         
         return np.asarray ( (b1,b2) )
 
-    def rhs_trac_kernel(self,gausspts,shape,jaco,bf):
+    def rhs_trac_kernel(self,gausspts,shape,jaco,trac):
         # continuum elements do not implement traction. 
         return np.zeros(self.edofn)
 

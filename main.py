@@ -36,7 +36,7 @@ if __name__ == '__main__':
     fypymesh.make_solution_from_rhs(solution)
 
     # then create output data
-
+    breakpoint()
     # create output files
     
 
