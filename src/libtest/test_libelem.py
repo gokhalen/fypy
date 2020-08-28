@@ -339,7 +339,63 @@ class TestLibElem(TestFyPy):
         self.assertTrue(error < closeatol,msg='Solutions do not match in test_linelas1d_generated_1')
 
     def test_linelas2d(self):
+        # test stiffness matrix, body force, point force and dirichlet rhs
+        coord   = np.zeros(12,dtype='float64').reshape(4,3)
+        prop    = np.zeros(8,dtype='float64').reshape(4,2)
+        bf      = np.zeros(8,dtype='float64').reshape(4,2)
+        pforce  = np.zeros(8,dtype='float64').reshape(4,2)
+        trac    = np.zeros(8,dtype='float64').reshape(4,2)
+        dirich1 = np.zeros(8,dtype='float64').reshape(4,2)  #constrained
+        dirich2 = np.zeros(8,dtype='float64').reshape(4,2)  #unconstrained
+        ideqn1  = np.zeros(8).reshape(4,2)                  #constrained
+        ideqn2  = np.zeros(8).reshape(4,2)                  #unconstrained 
+
+        # z-coordinate should be ignored
+        coord[0] = 1.0,1.0,3.0  
+        coord[1] = 3.0,1.0,3.0
+        coord[2] = 3.0,5.0,3.0
+        coord[3] = 1.0,5.0,3.0
+
+        # lambda is first, then mu
+        prop[0] = 2.0,1.0
+        prop[1] = 2.0,1.0
+        prop[2] = 2.0,1.0
+        prop[3] = 2.0,1.0
+
+        # body force
+        bf[0] = 1.0,2.0
+        bf[1] = 1.0,2.0
+        bf[2] = 1.0,2.0
+        bf[3] = 1.0,2.0
+
+        # point force
+        pforce[0] = 7.0,   8.0
+        pforce[1] = 9.0,  10.0
+        pforce[2] = 11.0, 12.0
+        pforce[3] = 13.0, 14.0
+
+        # dirichlet conditions - five dofs constrained
+        dirich1[0]     = 0.0,0.0
+        dirich1[1][1]  = 0.0
+        dirich1[2][1]  = 1.0
+        dirich1[3][1]  = 1.0
+
+        # constrained ideqn
+
+        ideqn1[0]    = -1,-1
+        ideqn1[1][0] = 0 ; ideqn1[1][1] = -1
+        ideqn1[2][0] = 1 ; ideqn1[2][1] = -1
+        ideqn1[3][0] = 2 ; ideqn1[3][1] = -1
+
+        
+        elas2d = LinElas2D(ninteg=3,gdofn=10)
+        elas2d.setdata(coord=coord,prop=prop,bf=bf,pforce=pforce,dirich=dirich1,trac=trac,ideqn=ideqn1)
+        elas2d.compute()
+        breakpoint()
+        
+    def test_linelas2d_1_element(self):
         pass
+
 
     def test_linelastrac2d(self):
         # LinElasTrac2D should only need coordinates and traction to function properly
