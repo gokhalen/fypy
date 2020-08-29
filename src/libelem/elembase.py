@@ -25,8 +25,6 @@ class ElemBase():
         self.kmatrix = sparse.coo_matrix(tt,shape=(gdofn,gdofn),dtype='float64')
         self.rhs     = sparse.coo_matrix(tt,shape=(gdofn,1),dtype='float64')
         
-
-        
         self.edofn   = self.elnodes*self.elndofn                                               # total dofn in this element
 
         self.erhs       = np.zeros(self.edofn)                                                    # rhs vector

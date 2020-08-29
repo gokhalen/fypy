@@ -48,7 +48,6 @@ class TestLibElem(TestFyPy):
         
  
         ideqn[0][0]  = 1;     ideqn[1][0]  = 4;
-        
 
         elas1d.setdata(coord=coord,prop=prop,bf=bf,pforce=pforce,dirich=dirich,trac=trac,ideqn=ideqn)
         elas1d.compute()
@@ -410,13 +409,12 @@ class TestLibElem(TestFyPy):
         # expected quantities
         exppforce = np.asarray([7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0])
         exptrac   = np.asarray([0.0,0.0,0.0,0.0 ,0.0 , 0.0, 0.0, 0.0])
+        expbf     = np.asarray([b1,b2,b3,b4,b5,b6,b7,b8])
 
-                
+        breakpoint()
         elas2d = LinElas2D(ninteg=3,gdofn=10)
         elas2d.setdata(coord=coord,prop=prop,bf=bf,pforce=pforce,dirich=dirich1,trac=trac,ideqn=ideqn1)
         elas2d.compute()
-
-        breakpoint()
 
         # check errors
         error_pforce = np.linalg.norm(exppforce-elas2d.erhspf) 
@@ -424,6 +422,10 @@ class TestLibElem(TestFyPy):
 
         error_trac = np.linalg.norm(exptrac - elas2d.erhstrac)
         self.assertTrue(error_trac < closeatol,msg='trac does not match in test_linelas2d')
+
+        error_bf = np.linalg.norm(expbf -elas2d.erhsbf)
+        self.assertTrue(error_bf < closeatol,msg='bf does not match in test_linelas2d')
+
 
     def test_linelas2d_1_element(self):
         pass

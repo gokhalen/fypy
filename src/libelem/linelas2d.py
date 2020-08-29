@@ -1,4 +1,5 @@
 from .elembase import *
+import itertools
 
 class LinElas2D(ElemBase):
     
@@ -13,8 +14,60 @@ class LinElas2D(ElemBase):
         super().__init__(ninteg=ninteg,gdofn=gdofn)
         
     def stiffness_kernel(self,gausspts,shape,jaco,prop):
-        # returns a 8x8 matrix for now
-        return np.arange(8*8).reshape(8,8)
+        kk = np.zeros(8*8,dtype='float64').reshape(8,8)
+
+        itr_a = range(1,self.elnodes+1)
+        itr_b = range(1,self.elnodes+1)
+
+        _lambda = prop[0]
+        _mu     = prop[1]
+
+        DD = np.zeros(9,dtype='float64').reshape(3,3)
+        DD[0][0] = _lambda + 2*_mu
+        DD[1][1] = _lambda + 2*_mu
+        DD[2][2] = _mu
+        DD[0][1] = _lambda
+        DD[1][0] = _lambda
+
+        
+        for bb in itr_b:
+            Nb1 = jaco.gder[bb-1][1-1]
+            Nb2 = jaco.gder[bb-1][2-1]
+
+            BB = np.zeros(6,dtype='float64').reshape(3,2)
+            
+            BB[0][0] = Nb1
+            BB[1][1] = Nb2
+            BB[2][0] = Nb2
+            BB[2][1] = Nb1
+
+            DB = DD@BB
+
+            for aa in itr_a:
+                Na1 = jaco.gder[aa-1][1-1]
+                Na2 = jaco.gder[aa-1][2-1]
+
+                BA = np.zeros(6,dtype='float64').reshape(3,2)
+                
+                BA[0][0] = Na1
+                BA[1][1] = Na2
+                BA[2][0] = Na2
+                BA[2][1] = Na1
+
+                BAT = BA.T
+
+                BDB = BA@DB
+
+                itr_i = range(1,self.ndime)
+                itr_j = range(1,self.ndime)
+                
+                for ii,jj in itertools.product(itr_i,itr_j):
+                    ieqn = self.elndofn*(aa-1) + ii - 1
+                    jeqn = self.elndofn*(bb-1) + jj - 1
+
+                    kk[ieqn][jeqn] = BDB[ii][jj]
+        
+        return kk
 
     def rhs_bf_kernel(self,gausspts,shape,jaco,bf):
         # the body force is \int N_A b_i
