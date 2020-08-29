@@ -1,5 +1,6 @@
 from .elembase import *
 import itertools
+import copy
 
 class LinElas2D(ElemBase):
     
@@ -14,6 +15,7 @@ class LinElas2D(ElemBase):
         super().__init__(ninteg=ninteg,gdofn=gdofn)
         
     def stiffness_kernel(self,gausspts,shape,jaco,prop):
+
         kk = np.zeros(8*8,dtype='float64').reshape(8,8)
 
         itr_a = range(1,self.elnodes+1)
@@ -56,17 +58,20 @@ class LinElas2D(ElemBase):
 
                 BAT = BA.T
 
-                BDB = BA@DB
+                BDB = BAT@DB
 
-                itr_i = range(1,self.ndime)
-                itr_j = range(1,self.ndime)
+                itr_i = range(1,self.ndime+1)
+                itr_j = range(1,self.ndime+1)
                 
                 for ii,jj in itertools.product(itr_i,itr_j):
                     ieqn = self.elndofn*(aa-1) + ii - 1
                     jeqn = self.elndofn*(bb-1) + jj - 1
 
-                    kk[ieqn][jeqn] = BDB[ii][jj]
-        
+                    kk[ieqn][jeqn] = BDB[ii-1][jj-1]
+                    
+                    # breakpoint()
+                    # print(f'{aa=} {ii=} {ieqn=} {bb=} {jj=} {jeqn=}')
+
         return kk
 
     def rhs_bf_kernel(self,gausspts,shape,jaco,bf):

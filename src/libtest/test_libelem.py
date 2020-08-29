@@ -337,7 +337,7 @@ class TestLibElem(TestFyPy):
         error = np.linalg.norm(expsol-x) 
         self.assertTrue(error < closeatol,msg='Solutions do not match in test_linelas1d_generated_1')
 
-    def test_linelas2d(self):
+    def notest_linelas2d(self):
         # test stiffness matrix, body force, point force and dirichlet rhs
         coord   = np.zeros(12,dtype='float64').reshape(4,3)
         prop    = np.zeros(8,dtype='float64').reshape(4,2)
@@ -411,7 +411,6 @@ class TestLibElem(TestFyPy):
         exptrac   = np.asarray([0.0,0.0,0.0,0.0 ,0.0 , 0.0, 0.0, 0.0])
         expbf     = np.asarray([b1,b2,b3,b4,b5,b6,b7,b8])
 
-        breakpoint()
         elas2d = LinElas2D(ninteg=3,gdofn=10)
         elas2d.setdata(coord=coord,prop=prop,bf=bf,pforce=pforce,dirich=dirich1,trac=trac,ideqn=ideqn1)
         elas2d.compute()
@@ -428,8 +427,54 @@ class TestLibElem(TestFyPy):
 
 
     def test_linelas2d_1_element(self):
-        pass
+        # test stiffness matrix, body force, point force and dirichlet rhs
+        coord   = np.zeros(12,dtype='float64').reshape(4,3)
+        prop    = np.zeros(8,dtype='float64').reshape(4,2)
+        bf      = np.zeros(8,dtype='float64').reshape(4,2)
+        pforce  = np.zeros(8,dtype='float64').reshape(4,2)
+        trac    = np.zeros(8,dtype='float64').reshape(4,2)
+        dirich  = np.zeros(8,dtype='float64').reshape(4,2)  #constrained
+        ideqn   = np.zeros(8).reshape(4,2)                  #constrained
 
+
+        # z-coordinate should be ignored
+        coord[0] = 1.0,1.0,3.0  
+        coord[1] = 3.0,1.0,3.0
+        coord[2] = 3.0,6.0,3.0
+        coord[3] = 1.0,6.0,3.0
+
+        # lambda is first, then mu
+        prop[0] = 2.0,1.0
+        prop[1] = 2.0,1.0
+        prop[2] = 2.0,1.0
+        prop[3] = 2.0,1.0
+
+        # dirichlet conditions - five dofs constrained
+        dirich[0] = 0.0,0.0
+        dirich[1] = 0.0,0.0
+        dirich[2] = 0.0,-1.0
+        dirich[3] = 0.0,-1.0
+        
+        # constrained ideqn
+
+        ideqn[0]    = -1,-1
+        ideqn[1][0] = 0 ; ideqn[1][1] = -1
+        ideqn[2][0] = 1 ; ideqn[2][1] = -1
+        ideqn[3][0] = 2 ; ideqn[3][1] = -1
+
+        elas2d = LinElas2D(ninteg=4,gdofn=3)
+        elas2d.setdata(coord=coord,prop=prop,bf=bf,pforce=pforce,dirich=dirich,trac=trac,ideqn=ideqn)
+        elas2d.compute()
+
+        gkmatrix   = elas2d.kmatrix
+        grhs       = elas2d.rhs
+        x,exitCode = scipy.sparse.linalg.bicg(gkmatrix,grhs.todense(),atol=closeatol)
+
+        expsol = np.asarray([0.2,0.2,0.0])
+        error_sol = np.linalg.norm(expsol-x)
+        self.assertTrue(error_sol < closeatol,msg='Solutions do not match in test_linelas2d')
+
+                
 
     def test_linelastrac2d(self):
         # LinElasTrac2D should only need coordinates and traction to function properly

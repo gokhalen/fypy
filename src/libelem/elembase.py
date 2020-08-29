@@ -176,7 +176,7 @@ class ElemBase():
         # body force contribution
         self.erhsbf    = integrate_parent(self.rhs_bf_kernel,self.gg,self.ss,self.bfinterp,self.jj)
         
-        self.erhsdir   = -self.estiff@((self.dirich).reshape(self.edofn))
+        self.erhsdir   = -self.estiff@((self.dirich).ravel(order='C'))
         
         # all elements  will implement rhs_trac_kernel; continuum elements will return zero; boundary elements will do the correct integration
         self.erhstrac  = integrate_parent(self.rhs_trac_kernel,self.gg,self.ss,self.tracinterp,self.jj)
@@ -208,7 +208,7 @@ class ElemBase():
         fcol     = np.zeros(len(fdata))
         tt       = (fdata,(frow,fcol))
         self.rhs = sparse.coo_matrix(tt,shape=(self.gdofn,1),dtype='float64')
-
+        
         # filter estiff to exclude dirichlet data
         fdata = []; frow=[]; fcol=[]
         for ii,irow in enumerate(row):
@@ -227,6 +227,5 @@ class ElemBase():
         self.compute_stiffness()
         self.compute_rhs()
         self.create_global_Kf()
-        pass
         
 
