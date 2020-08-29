@@ -151,10 +151,10 @@ class FyPyMesh():
         for x,y,z in self.coord:
             dist = (x-xmid)**2 + (y-ymid)**2
             dist = dist**0.5
-            mu = self.stfmin; lam = self.stfmin;
+            mu = self.stfmin; lam = 2.0*self.stfmin;
             
             if ( stf=='inclusion' and ( dist < rad ) ):
-                mu = self.stfmax; lam =self.stfmax
+                mu = self.stfmax; lam =2.0*self.stfmax
 
             self.prop.append([lam,mu])
 
