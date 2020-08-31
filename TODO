@@ -1,6 +1,3 @@
--1)  More testing for jaco2d: Rectangular and General Polygon
- 0)  Annotations/Type hints  for gausslegendre.py 
- 1)  Jacobians, and its unittests
- 2)  Calculate jacobian in parent element routines for 2d
+ 1) Property checking of array index sizes in elembase
  3)  Dictionary for initalizing element types and quad
 
