@@ -4,7 +4,7 @@ from ..libinteg.gausslegendre import *
 from ..libinteg.integrate import *
 from ..libshape.shape import *
 from ..libshape.jacobian import *
-from .propcheck import *
+
 
 
 class ElemBase():
