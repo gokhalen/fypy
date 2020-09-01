@@ -20,7 +20,8 @@ if __name__ == '__main__':
         print('Usage: main.py <meshfile>')
         sys.exit(1)
     
-    meshfile=sys.argv[1]
+    meshfile = sys.argv[1]
+    outfile  = meshfile.strip('in') + 'out'
         
     # create mesh object 
     fypymesh = FyPyMesh();
@@ -36,7 +37,7 @@ if __name__ == '__main__':
     fypymesh.make_solution_from_rhs(solution)
 
     # then create output data
-    breakpoint()
+    fypymesh.make_output(outfile)
     # create output files
     
 

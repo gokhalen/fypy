@@ -1,5 +1,7 @@
 {
     "nelem": 400,
+    "nelemx": 20,
+    "nelemy": 20,
     "nnodes": 441,
     "ninteg": 3,
     "ndofn": 2,

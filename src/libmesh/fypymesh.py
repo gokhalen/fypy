@@ -25,6 +25,8 @@ class FyPyMesh():
         self.end      = end
         self.length   = self.end - self.start
         self.nelem    = nelem
+        self.nelemx   = nelem
+        self.nelemy   = 0
         self.stf      = stf
         self.stfmin   = 1
         self.stfmax   = 5
@@ -94,6 +96,8 @@ class FyPyMesh():
         
         # data needed for write_mesh
         self.nelem    = nelemx*nelemy
+        self.nelemx   = nelemx
+        self.nelemy   = nelemy
         if ( bctype == 'trac'): self.nelem += nelemx  # if traction elements, increase nlelem
         self.nnodes   = nnodex*nnodey
         self.ninteg   = 3
@@ -206,7 +210,8 @@ class FyPyMesh():
 
 
             # some global data
-            fout.write('nelem='+str(self.nelem)+' nnodes='+str(self.nnodes)+' ninteg='+str(self.ninteg)+
+            fout.write('nelem='+str(self.nelem)+' nelemx='+str(self.nelemx)+ ' nelemy='+str(self.nelemy)+
+                       ' nnodes='+str(self.nnodes)+' ninteg='+str(self.ninteg)+
                        ' ndofn='+str(self.ndofn)+ ' nprop='+str(self.nprop)+' ndime='+str(self.ndime)+
                        ' gdofn='+str(self.gdofn)+'\n')
             
@@ -222,6 +227,8 @@ class FyPyMesh():
 
     def json_dump(self,filename='data.in.json'):
         dd = { 'nelem':self.nelem,
+               'nelemx':self.nelemx,
+               'nelemy':self.nelemy,
                'nnodes':self.nnodes,
                'ninteg':self.ninteg,
                'ndofn':self.ndofn,
@@ -258,6 +265,18 @@ class FyPyMesh():
                     self.solution[inode-1][idofn-1] = rhs[ieqnno]
                 else:
                     self.solution[inode-1][idofn-1] = self.dirich[inode-1][idofn-1]
+
+    def make_output(self,outfile):
+        # output the solution only
+        # rest can be picked up from input file
+        
+        sollist = [ list(ss) for ss in self.solution]
+        dd = {'solution':sollist}
+        
+        with open(outfile,'w') as fout:
+            json.dump(dd,fout,indent=4)
+
+
 
  
             
