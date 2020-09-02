@@ -38,6 +38,8 @@ def assembly(fypymesh:FyPyMesh)->TOUTASS:
     data = (0.0,); row = (0,); col = (0,); tt = (data,(row,col))
     kk  = sparse.coo_matrix(tt,shape=(gdofn,gdofn),dtype='float64');
     rhs = sparse.coo_matrix(tt,shape=(gdofn,1),dtype='float64');
+
+    eldict = {}
     
     for ielem in range(1,fypymesh.nelem+1):
         eltype = fypymesh.conn[ielem-1][-1]

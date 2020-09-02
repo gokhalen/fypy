@@ -114,7 +114,7 @@ class ElemBase():
         assert (x.shape == (self.elnodes,self.elndofn)),msg
         self._bf = x
 
-    '''
+    
     @property
     def coord(self):
         return self._coord
@@ -126,8 +126,7 @@ class ElemBase():
         msg = f'In elembase.py coords not of the right shape, expected ({self.elnodes,3}) got {x.shape}'
         assert (x.shape == (self.elnodes,3)), msg
         self._coord = x
-    '''
-
+    
     @property
     def prop(self):
         return self._prop

@@ -6,7 +6,6 @@ from typing import Callable,Iterable,Union
 from ..libshape.shape import *
 from ..libshape.jacobian import *
 from .test import *
-from ..libutil.util import *
 from ..libinteg.gausslegendre import *
 
 
