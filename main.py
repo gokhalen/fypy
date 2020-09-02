@@ -6,6 +6,7 @@ Created on Fri Jul 17 19:31:21 2020
 """
 
 import sys,time
+# import cProfile
 
 
 from src.libmesh.fypymesh    import *
@@ -40,8 +41,8 @@ if __name__ == '__main__':
     start_assem = time.perf_counter()
     
     # create stiffness matrix and rhs
+    # cProfile.run('kk,rhs = assembly(fypymesh)')
     kk,rhs = assembly(fypymesh)
-
     end_assem = time.perf_counter()
         
     # then solver
