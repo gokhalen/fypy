@@ -110,7 +110,7 @@ class FyPyMesh():
         self.stfmax   = 5
 
         qdirich = -1
-        qtrac   = -1
+        qtrac   = -0.6
         
         # node numbers increase by 1 in the y direction by nodey in the x-direction
         # node numbers are defined implicitly.

@@ -5,10 +5,10 @@ import numpy as np
 from ..libmesh.fypymesh import *
 
 # get elements
-from ..libelem.elembase  import *
-from ..libelem.linelas1d import *
-from ..libelem.linelas2d import *
-
+from ..libelem.elembase      import *
+from ..libelem.linelas1d     import *
+from ..libelem.linelas2d     import *
+from ..libelem.linelastrac2d import *
 
 from typing import Union,Tuple
 
