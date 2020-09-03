@@ -276,6 +276,10 @@ class FyPyMesh():
         with open(outfile,'w') as fout:
             json.dump(dd,fout,indent=4)
 
+    def make_sparsity(self):
+        # row, col
+        pass
+
 
 
  

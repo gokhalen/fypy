@@ -22,8 +22,8 @@ class ElemBase():
         # create sparse matrix - declared because these will be put into __slots__ in the future
         data =(0,); row = (0,); col = (0,)
         tt = (data,(row,col))
-        self.kmatrix = sparse.coo_matrix(tt,shape=(gdofn,gdofn),dtype='float64')
-        self.rhs     = sparse.coo_matrix(tt,shape=(gdofn,1),dtype='float64')
+        self.kmatrix = sparse.csr_matrix(tt,shape=(gdofn,gdofn),dtype='float64')
+        self.rhs     = sparse.csr_matrix(tt,shape=(gdofn,1),dtype='float64')
         
         self.edofn   = self.elnodes*self.elndofn                                                  # total dofn in this element
 
@@ -188,7 +188,11 @@ class ElemBase():
         fdata    = [ data[i] for i,r in enumerate(row) if r >=0 ]
         fcol     = np.zeros(len(fdata))
         tt       = (fdata,(frow,fcol))
-        self.rhs = sparse.coo_matrix(tt,shape=(self.gdofn,1),dtype='float64')
+        self.rhs = sparse.csr_matrix(tt,shape=(self.gdofn,1),dtype='float64')
+
+        self.fdata = fdata
+        self.frow  = frow
+        self.fcol  = fcol
         
         # filter estiff to exclude dirichlet data
         fdata = []; frow=[]; fcol=[]
@@ -200,7 +204,11 @@ class ElemBase():
                     fcol.append(icol)
 
         tt = (fdata,(frow,fcol))
-        self.kmatrix = sparse.coo_matrix(tt,shape=(self.gdofn,self.gdofn),dtype='float64')
+        self.kmatrix = sparse.csr_matrix(tt,shape=(self.gdofn,self.gdofn),dtype='float64')
+        
+        self.kdata = fdata
+        self.krow  = frow
+        self.kcol  = fcol
 
     def compute(self):
         self.getjaco()
