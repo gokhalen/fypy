@@ -2,13 +2,10 @@ from scipy import sparse
 import scipy.sparse.linalg
 import numpy as np
 
-from ..libmesh.fypymesh import *
+from ..libmesh import *
 
 # get elements
-from ..libelem.elembase      import *
-from ..libelem.linelas1d     import *
-from ..libelem.linelas2d     import *
-from ..libelem.linelastrac2d import *
+from ..libelem import *
 
 from typing import Union,Tuple
 

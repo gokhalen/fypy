@@ -1,6 +1,5 @@
 import numpy as np, copy
 from .elembase import *
-from ..libinteg.integrate import *
 
 class LinElasTrac2D(ElemBase):
 

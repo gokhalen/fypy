@@ -1,6 +1,6 @@
-from .src.libmesh.fypymesh import *
-from .src.libassem.assembly import *
-from .src.libsolve.fypysolver import *
+from .src.libmesh  import *
+from .src.libassem import *
+from .src.libsolve import *
 
 class FyPy():
     def __init__(self,fin):

@@ -3,11 +3,8 @@ import numpy as np
 import scipy.sparse.linalg
 from scipy import sparse
 
-from ..libelem.linelas1d import *
-from ..libelem.linelas2d import *
-from ..libelem.linelastrac2d import *
 
-
+from ..libelem import *
 from .test import *
 
 

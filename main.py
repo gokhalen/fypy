@@ -9,9 +9,9 @@ import sys,time
 # import cProfile
 
 
-from src.libmesh.fypymesh    import *
-from src.libassem.assembly   import *
-from src.libsolve.fypysolver import *
+from src.libmesh   import *
+from src.libassem  import *
+from src.libsolve  import *
 
 
 if __name__ == '__main__':

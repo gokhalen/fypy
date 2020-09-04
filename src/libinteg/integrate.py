@@ -1,6 +1,5 @@
 from .gausslegendre import *
-from ..libshape.shape import *
-from ..libshape.jacobian import *
+from ..libshape import *
 import math
 import numpy as np
 from typing import Iterable,Any

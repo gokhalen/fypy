@@ -1,10 +1,8 @@
 import numpy as np,itertools, copy
 from scipy import sparse,linalg
-from ..libinteg.gausslegendre import *
-from ..libinteg.integrate import *
-from ..libshape.shape import *
-from ..libshape.interp import *
-from ..libshape.jacobian import *
+
+from ..libinteg import *
+from ..libshape import *
 
 
 

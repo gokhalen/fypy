@@ -1,9 +1,7 @@
 import unittest,numpy as np,math,functools,itertools
 from typing import Callable,Any,Union
-from ..libinteg.gausslegendre import *
-from ..libinteg.integrate import integrate_parent
-from ..libshape.shape import *
-from ..libshape.jacobian import *
+from ..libinteg import *
+from ..libshape import *
 from .test import *
 
 
