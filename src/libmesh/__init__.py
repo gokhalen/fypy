@@ -1,1 +1,1 @@
-from src.libmesh.fypymesh import *
+from .fypymesh import *

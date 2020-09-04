@@ -1,2 +1,2 @@
-from src.libassem.assembly import *
-from src.libassem.assembly2 import *
+from .assembly import *
+from .assembly2 import *

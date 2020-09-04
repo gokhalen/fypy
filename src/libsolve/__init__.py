@@ -1,1 +1,1 @@
-from src.libsolve.fypysolver import *
+from .fypysolver import *

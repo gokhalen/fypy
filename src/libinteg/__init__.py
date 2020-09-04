@@ -1,2 +1,2 @@
-from src.libinteg.gausslegendre import *
-from src.libinteg.integrate     import *
+from .gausslegendre import *
+from .integrate     import *
