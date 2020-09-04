@@ -4,6 +4,7 @@ import numpy as np
 
 from typing import Callable,Iterable,Union
 from ..libshape.shape import *
+from ..libshape.interp import *
 from ..libshape.jacobian import *
 from .test import *
 from ..libinteg.gausslegendre import *
