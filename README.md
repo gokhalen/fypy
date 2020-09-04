@@ -1,5 +1,7 @@
 # fypy
 
+Dependencies: Numpy, SciPy and Json
+
 To test the code, do the following:
 
 1) In the FyPy root directory, type: "cd Problems/2D/10X10_Traction_Homegeneous/"
