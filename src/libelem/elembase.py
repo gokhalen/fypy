@@ -1,5 +1,5 @@
 import numpy as np,itertools, copy
-from scipy import sparse,linalg
+from scipy import sparse
 
 from ..libinteg import *
 from ..libshape import *

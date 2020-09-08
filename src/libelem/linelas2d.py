@@ -99,4 +99,4 @@ class LinElas2D(ElemBase):
         return np.zeros(self.edofn)
 
     def rhs_point_force(self):
-        return copy.deepcopy(self.pforce.reshape(self.edofn))
+        return self.pforce.reshape(self.edofn)
