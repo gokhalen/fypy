@@ -6,7 +6,7 @@ Created on Fri Jul 17 19:31:21 2020
 """
 
 import sys,time
-# import cProfile
+import cProfile
 
 
 from src.libmesh   import *
@@ -18,7 +18,7 @@ if __name__ == '__main__':
     
     start_time = time.perf_counter()
     
-    print('FYnite elements in PYthon ...executing fypy/main.py ')
+    print('FYPY: FYnite elements in PYthon ...executing fypy/main.py ')
 
     start_pre  = time.perf_counter()
     
@@ -66,7 +66,7 @@ if __name__ == '__main__':
     solve_time = end_sol   - start_sol  
     out_time   = end_out   - start_out  
 
-    print(f'{total_time=},{pre_time=},{assem_time=}{solve_time=}{out_time=}')
+    print(f'{total_time=},  {pre_time=},  {assem_time=},  {solve_time=},  {out_time=}')
     print(f'{pre_time/total_time =} {assem_time/total_time =} { solve_time/total_time =} {out_time/total_time =}')
     
 

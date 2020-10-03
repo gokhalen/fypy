@@ -1,6 +1,7 @@
 from scipy import sparse
 import scipy.sparse.linalg
 import numpy as np
+from numba import njit
 
 from ..libmesh import *
 

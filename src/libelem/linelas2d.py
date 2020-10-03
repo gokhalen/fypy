@@ -2,6 +2,7 @@ from .elembase import *
 import itertools
 import copy
 
+
 class LinElas2D(ElemBase):
     
     def __init__(self,ninteg,gdofn):
@@ -13,7 +14,7 @@ class LinElas2D(ElemBase):
         self.nprop    = 2
 
         super().__init__(ninteg=ninteg,gdofn=gdofn)
-        
+
     def stiffness_kernel(self,gausspts,shape,jaco,prop):
 
         kk = np.zeros(8*8,dtype='float64').reshape(8,8)
