@@ -1,4 +1,6 @@
-import matplotlib.pyplot as plt,json
+import matplotlib.pyplot as plt
+import matplotlib as mpl
+import json
 import numpy as np
 
 with open('data.json.out','r') as fin:
@@ -36,11 +38,38 @@ uy  = uy.reshape(nnodex,nnodey)
 mu  = mu.reshape(nnodex,nnodey)
 lam = lam.reshape(nnodex,nnodey)
 
-fig, axes = plt.subplots(1,2)
+plt.figure('lambda')
+plt.pcolormesh(xx,yy,lam,vmin=0,vmax=10)
+plt.title('lambda')
+plt.colorbar()
+ax = plt.gca()
+ax.set_aspect('equal')
+plt.savefig('lambda.png')
 
-print(axes)
 
-axes[0].pcolormesh(xx,yy,mu)
-axes[1].pcolormesh(xx,yy,lam)
-# plt.pcolormesh(xx,yy,mu)
-# plt.colorbar()
+plt.figure('mu')
+plt.pcolormesh(xx,yy,mu,vmin=0,vmax=10)
+plt.title('mu')
+plt.colorbar()
+ax = plt.gca()
+ax.set_aspect('equal')
+plt.savefig('mu.png')
+
+
+plt.figure('ux')
+plt.pcolormesh(xx,yy,ux,vmin=-0.2,vmax=0.2)
+plt.title('ux')
+plt.colorbar()
+ax = plt.gca()
+ax.set_aspect('equal')
+plt.savefig('ux.png')
+
+
+plt.figure('uy')
+plt.pcolormesh(xx,yy,uy,vmin=-1.0,vmax=0.1)
+plt.title('uy')
+plt.colorbar()
+ax = plt.gca()
+ax.set_aspect('equal')
+plt.savefig('uy.png')
+

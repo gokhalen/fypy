@@ -41,8 +41,9 @@ if __name__ == '__main__':
     start_assem = time.perf_counter()
     
     # create stiffness matrix and rhs
-    # cProfile.run('kk,rhs = assembly(fypymesh)')
-    kk,rhs = assembly(fypymesh)
+    # cProfile.run('kk,rhs,scipy_time = assembly(fypymesh)')
+    
+    kk,rhs,scipy_time   = assembly(fypymesh)
     end_assem = time.perf_counter()
         
     # then solver
@@ -66,7 +67,9 @@ if __name__ == '__main__':
     solve_time = end_sol   - start_sol  
     out_time   = end_out   - start_out  
 
-    print(f'{total_time=},  {pre_time=},  {assem_time=},  {solve_time=},  {out_time=}')
-    print(f'{pre_time/total_time =} {assem_time/total_time =} { solve_time/total_time =} {out_time/total_time =}')
+    print(f'{total_time=},\n  {pre_time=},\n  {assem_time=},\n  {solve_time=},\n  {out_time=},\n {scipy_time=}\n')
+    print(f'{pre_time/total_time =},\n {assem_time/total_time =},\n'
+          f'{scipy_time/total_time=},\n'
+          f'{ solve_time/total_time =},\n {out_time/total_time =},\n')
     
 

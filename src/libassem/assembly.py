@@ -1,7 +1,7 @@
 from scipy import sparse
 import scipy.sparse.linalg
 import numpy as np
-from numba import njit
+import time
 
 from ..libmesh import *
 
@@ -38,7 +38,8 @@ def assembly(fypymesh:FyPyMesh)->TOUTASS:
     rhs = sparse.coo_matrix(tt,shape=(gdofn,1),dtype='float64');
 
     eldict = {}
-    
+
+    scipy_time = 0.0
     for ielem in range(1,fypymesh.nelem+1):
         eltype = fypymesh.conn[ielem-1][-1]
         elem   = getelem(eltype,ninteg,gdofn)
@@ -61,8 +62,12 @@ def assembly(fypymesh:FyPyMesh)->TOUTASS:
         # compute
         elem.compute()
 
+        t1   = time.perf_counter()
         kk  += elem.kmatrix
         rhs += elem.rhs
+        t2   = time.perf_counter()
+        scipy_time += (t2-t1)
+        
     
         
-    return (kk,rhs)
+    return (kk,rhs,scipy_time)
