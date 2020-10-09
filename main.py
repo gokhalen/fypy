@@ -7,7 +7,7 @@ Created on Fri Jul 17 19:31:21 2020
 
 import sys,time
 import cProfile
- 
+import argparse 
 
 from src.libmesh   import *
 from src.libassem  import *
@@ -15,6 +15,16 @@ from src.libsolve  import *
 
 
 if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser(description='FYPY: A finite element code written in Python')
+    parser.add_argument('--nprocs',help='number of processes to use',required=True,type=int)
+    parser.add_argument('--inputfile',help='input json file',required=True,type=str)
+    parser.add_argument('--outputfile',help='output json file',required=True,type=str)        
+    args = parser.parse_args()
+
+    meshfile = args.inputfile
+    outfile  = args.outputfile
+    nprocs   = args.nprocs
     
     start_time = time.perf_counter()
     
@@ -22,16 +32,6 @@ if __name__ == '__main__':
 
     start_pre  = time.perf_counter()
     
-    # check if atleast one argument (apart from the name) is supplied
-    if ( len(sys.argv) < 2):
-        print('Usage: main.py <meshfile>')
-        sys.exit(1)
-
-        
-    meshfile = sys.argv[1]
-    outfile  = meshfile.strip('in') + 'out'
-        
-    # create mesh object 
     fypymesh = FyPyMesh();
     fypymesh.json_read(meshfile)
     

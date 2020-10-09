@@ -12,3 +12,9 @@ To test the code, do the following:
 Other Notes:
 1) To checkout specific tag, first clone the repo and then
       "git checkout <tagname>" e.g. "git checkout v1.0"
+
+2) Tags are added with:
+      git tag -a v1.0 -m "Before Parallel Development"
+
+      -a means annotated
+      -m means annotation (probably)
