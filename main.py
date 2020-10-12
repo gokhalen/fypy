@@ -17,11 +17,10 @@ from src.libsolve  import *
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='FYPY: A finite element code written in Python')
-    parser.add_argument('--nprocs',help='number of processes to use',required=True,type=int)
-    parser.add_argument('--inputfile',help='input json file',required=True,type=str)
-    parser.add_argument('--outputfile',help='output json file',required=True,type=str)        
+    parser.add_argument('--nprocs',help='number of processes to use',required=False,type=int,default=1)
+    parser.add_argument('--inputfile',help='input json file',required=False,type=str,default='data.json.in')
+    parser.add_argument('--outputfile',help='output json file',required=False,type=str,default='data.json.out')        
     args = parser.parse_args()
-
     meshfile = args.inputfile
     outfile  = args.outputfile
     nprocs   = args.nprocs
@@ -42,8 +41,12 @@ if __name__ == '__main__':
     
     # create stiffness matrix and rhs
     # cProfile.run('kk,rhs,scipy_time = assembly(fypymesh)')
+
+    if ( nprocs == 1 ):
+        kk,rhs,scipy_time = assembly(fypymesh)
+    else:
+        kk,rhs,scipy_time = assembly_par(fypymesh,nprocs)
     
-    kk,rhs,scipy_time   = assembly(fypymesh)
     end_assem = time.perf_counter()
         
     # then solver

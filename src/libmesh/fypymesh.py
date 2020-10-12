@@ -1,6 +1,9 @@
 # A quick and dirty 1d,2d-mesh generator
 import sys,json;
 import numpy as np;
+from collections import namedtuple
+
+ElemDataTuple=namedtuple('ElemDataTuple',['eltype','nodes'])
 
 class FyPyMesh():
     stflist = ['homogeneous','inclusion']
@@ -18,7 +21,6 @@ class FyPyMesh():
                     ieqnno +=1
 
         self.gdofn = ieqnno
-                    
 
     def create_mesh_1d(self,start=0.0,end=1.0,nelem=10,stf='homogeneous'):
         self.start    = start
@@ -39,8 +41,6 @@ class FyPyMesh():
 
         # derived data
         self.nnodes   = self.nelem  + 1
-
-
         assert (end > start),f'{end=} should be greater than {start=}'
         
         if ( not stf in FyPyMesh.stflist ):
@@ -280,6 +280,24 @@ class FyPyMesh():
         # row, col
         pass
 
+
+    # default iterator which yields elements
+    def __iter__(self):
+        self.idx   = 0
+        self.start = 0
+        self.end   = self.nelem
+        return self
+
+    def __next__(self):
+        # return a tuple: (eltype,(argument data for setdata))
+        if ( self.idx < self.nelem ):
+            eltype = self.conn[self.idx][-1]
+            *nodes,= self.conn[self.idx][0:-1]
+            self.idx +=1
+        else:
+            raise StopIteration('StopIteration Raised in fypymesh')
+            
+        return ElemDataTuple(eltype=eltype,nodes=nodes)
 
 
  

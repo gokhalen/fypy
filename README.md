@@ -1,6 +1,6 @@
 # fypy
 
-Dependencies: Numpy, SciPy and Json
+Dependencies: Numpy, SciPy and Json, timerit and multiprocessing
 
 To test the code, do the following:
 
@@ -17,4 +17,4 @@ Other Notes:
       git tag -a v1.0 -m "Before Parallel Development"
 
       -a means annotated
-      -m means annotation (probably)
+      -m means message

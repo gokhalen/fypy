@@ -6,27 +6,13 @@ import time
 from ..libmesh import *
 
 # get elements
-from ..libelem import *
+from .assutils import *
 
 from typing import Union,Tuple
 
 
 ss         = sparse.coo_matrix
 TOUTASS    = Tuple[ss,ss]
-TOUTGETELM = Union[LinElas1D]
-
-def getelem(elemname:str,ninteg,gdofn)->TOUTGETELM:
-    if ( elemname == 'linelas1d'):
-        return LinElas1D(ninteg=ninteg,gdofn=gdofn)
-    
-    if ( elemname == 'linelas2d'):
-        return LinElas2D(ninteg=ninteg,gdofn=gdofn)
-
-    if ( elemname == 'linelastrac2d'):
-        return LinElasTrac2D(ninteg=ninteg,gdofn=gdofn)
-
-    raise RuntimeError(f'element {elemname} not found')
-    
 
 def assembly(fypymesh:FyPyMesh)->TOUTASS:
     gdofn  = fypymesh.gdofn

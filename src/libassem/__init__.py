@@ -1,2 +1,3 @@
 from .assembly import *
-from .assembly2 import *
+from .assembly_par import *
+
