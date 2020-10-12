@@ -45,6 +45,7 @@ if __name__ == '__main__':
     if ( nprocs == 1 ):
         kk,rhs,scipy_time = assembly(fypymesh)
     else:
+        print('Parallel (Mapped) assembly started..')
         kk,rhs,scipy_time = assembly_par(fypymesh,nprocs)
     
     end_assem = time.perf_counter()

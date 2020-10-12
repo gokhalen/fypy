@@ -3,7 +3,18 @@ import sys,json;
 import numpy as np;
 from collections import namedtuple
 
-ElemDataTuple=namedtuple('ElemDataTuple',['eltype','nodes'])
+ElemDataTuple=namedtuple('ElemDataTuple',['eltype',
+                                          'nodes',
+                                          'coord',
+                                          'prop',
+                                          'bf',
+                                          'pforce',
+                                          'dirich',
+                                          'trac',
+                                          'ideqn',
+                                          'ninteg',
+                                          'gdofn'
+                                          ])
 
 class FyPyMesh():
     stflist = ['homogeneous','inclusion']
@@ -291,13 +302,35 @@ class FyPyMesh():
     def __next__(self):
         # return a tuple: (eltype,(argument data for setdata))
         if ( self.idx < self.nelem ):
+            
             eltype = self.conn[self.idx][-1]
             *nodes,= self.conn[self.idx][0:-1]
+            
+            coord  = np.asarray([self.coord[n-1]  for n in nodes])
+            prop   = np.asarray([self.prop[n-1]   for n in nodes])
+            bf     = np.asarray([self.bf[n-1]     for n in nodes])
+            pforce = np.asarray([self.pforce[n-1] for n in nodes])
+            dirich = np.asarray([self.dirich[n-1] for n in nodes])
+            trac   = np.asarray([self.trac[n-1]   for n in nodes])
+            ideqn  = np.asarray([self.ideqn[n-1]  for n in nodes])
+
+            # increment counter
             self.idx +=1
         else:
             raise StopIteration('StopIteration Raised in fypymesh')
             
-        return ElemDataTuple(eltype=eltype,nodes=nodes)
+        return ElemDataTuple(eltype=eltype,
+                             nodes=nodes,
+                             coord=coord,
+                             prop=prop,
+                             bf=bf,
+                             pforce=pforce,
+                             dirich=dirich,
+                             trac=trac,
+                             ideqn=ideqn,
+                             ninteg=self.ninteg,
+                             gdofn=self.gdofn
+                             )
 
 
  

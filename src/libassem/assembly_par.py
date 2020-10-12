@@ -14,6 +14,11 @@ ss         = sparse.coo_matrix
 TOUTASS    = Tuple[ss,ss]
 TOUTGETELM = Union[LinElas1D]
 
+
+def mapelem(tt):
+    elem = getelem(tt.elype,tt.ninteg,tt.gdofn)
+    pass
+
 def assembly_par(fypymesh:FyPyMesh,nprocs:int)->TOUTASS:
     gdofn  = fypymesh.gdofn
     ninteg = fypymesh.ninteg
@@ -33,23 +38,15 @@ def assembly_par(fypymesh:FyPyMesh,nprocs:int)->TOUTASS:
         ielem  = ielem1+1
         eltype = tt.eltype
         elem   = getelem(eltype,ninteg,gdofn)
-        
-        # nn is list of nodes 
-        # *nn,   =  fypymesh.conn[ielem-1][0:-1]
         nn     = tt.nodes
-    
-        # get coord
-        coord  = np.asarray([ fypymesh.coord[n-1]  for n in nn])
-        prop   = np.asarray([ fypymesh.prop[n-1]   for n in nn])
-        bf     = np.asarray([ fypymesh.bf[n-1]     for n in nn])
-        pforce = np.asarray([ fypymesh.pforce[n-1] for n in nn])
-        dirich = np.asarray([ fypymesh.dirich[n-1] for n in nn])
-        trac   = np.asarray([ fypymesh.trac[n-1]   for n in nn])
-        ideqn  = np.asarray([ fypymesh.ideqn[n-1]  for n in nn])
-
-        # call the setdata method to initialize the element
+        coord  = tt.coord
+        prop   = tt.prop
+        bf     = tt.bf
+        pforce = tt.pforce
+        dirich = tt.dirich
+        trac   = tt.trac
+        ideqn  = tt.ideqn
         elem.setdata(coord=coord,prop=prop,bf=bf,pforce=pforce,dirich=dirich,trac=trac,ideqn=ideqn)
-
         # compute
         elem.compute()
 
