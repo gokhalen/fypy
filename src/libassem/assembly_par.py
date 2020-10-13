@@ -14,10 +14,16 @@ ss         = sparse.coo_matrix
 TOUTASS    = Tuple[ss,ss]
 TOUTGETELM = Union[LinElas1D]
 
+class KKRhs():
+    pass
+
 
 def mapelem(tt):
-    elem = getelem(tt.elype,tt.ninteg,tt.gdofn)
-    pass
+    elem = getelem(tt.eltype,tt.ninteg,tt.gdofn)
+    elem.setdata(coord=tt.coord  , prop=tt.prop, bf=tt.bf,      pforce=tt.pforce,
+                 dirich=tt.dirich, trac=tt.trac, ideqn=tt.ideqn                 )
+    elem.compute()
+    return (elem.kmatrix,elem.rhs)
 
 def assembly_par(fypymesh:FyPyMesh,nprocs:int)->TOUTASS:
     gdofn  = fypymesh.gdofn
@@ -46,13 +52,13 @@ def assembly_par(fypymesh:FyPyMesh,nprocs:int)->TOUTASS:
         dirich = tt.dirich
         trac   = tt.trac
         ideqn  = tt.ideqn
-        elem.setdata(coord=coord,prop=prop,bf=bf,pforce=pforce,dirich=dirich,trac=trac,ideqn=ideqn)
-        # compute
-        elem.compute()
+
+
+        kkmap,rhsmap=mapelem(tt)
 
         t1   = time.perf_counter()
-        kk  += elem.kmatrix
-        rhs += elem.rhs
+        kk  += kkmap
+        rhs += rhsmap
         t2   = time.perf_counter()
         scipy_time += (t2-t1)
         
