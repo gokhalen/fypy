@@ -18,12 +18,15 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='FYPY: A finite element code written in Python')
     parser.add_argument('--nprocs',help='number of processes to use',required=False,type=int,default=1)
+    parser.add_argument('--chunksize',help='chunksize to use',required=False,type=int,default=16)
     parser.add_argument('--inputfile',help='input json file',required=False,type=str,default='data.json.in')
     parser.add_argument('--outputfile',help='output json file',required=False,type=str,default='data.json.out')        
     args = parser.parse_args()
-    meshfile = args.inputfile
-    outfile  = args.outputfile
-    nprocs   = args.nprocs
+    
+    meshfile  = args.inputfile
+    outfile   = args.outputfile
+    nprocs    = args.nprocs
+    chunksize = args.chunksize
     
     start_time = time.perf_counter()
     
@@ -46,7 +49,7 @@ if __name__ == '__main__':
         kk,rhs,scipy_time = assembly(fypymesh)
     else:
         print('Parallel (Mapped) assembly started..')
-        kk,rhs,scipy_time = assembly_par(fypymesh,nprocs)
+        kk,rhs,scipy_time = assembly_par(fypymesh,nprocs,chunksize)
     
     end_assem = time.perf_counter()
         

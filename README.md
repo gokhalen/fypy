@@ -1,4 +1,4 @@
-# fypy
+# fypy: A Python3 based 2D linear elasticity finite element code
 
 Dependencies: Numpy, SciPy and Json, timerit and multiprocessing
 
