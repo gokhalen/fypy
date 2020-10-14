@@ -6,7 +6,7 @@ solvertol  = 1e-16
 
 class FyPySolver():
     def __init__(self,kk,rhs):
-        self.kk  = kk
+        self.kk  = kk.tocsr()
         self.rhs = rhs.todense()
 
     def solve(self,solver):

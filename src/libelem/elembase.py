@@ -21,8 +21,8 @@ class ElemBase():
         # create sparse matrix - declared because these will be put into __slots__ in the future
         data =(0,); row = (0,); col = (0,)
         tt = (data,(row,col))
-        self.kmatrix = sparse.csr_matrix(tt,shape=(gdofn,gdofn),dtype='float64')
-        self.rhs     = sparse.csr_matrix(tt,shape=(gdofn,1),dtype='float64')
+        self.kmatrix = sparse.coo_matrix(tt,shape=(gdofn,gdofn),dtype='float64')
+        self.rhs     = sparse.coo_matrix(tt,shape=(gdofn,1),dtype='float64')
         
         self.edofn   = self.elnodes*self.elndofn                                                  # total dofn in this element
 
@@ -34,17 +34,17 @@ class ElemBase():
         self.erhspf     = np.zeros(self.edofn)
 
         # we don't really need to initialize these values, we can just check in the setter and getter
-        self._coord     = np.zeros(self.elnodes*3).reshape(self.elnodes,3)                        # coordinates
-        self._prop      = np.zeros(self.elnodes*self.nprop).reshape(self.elnodes,self.nprop)      # stiffness property
-        self._bf        = np.zeros(self.elnodes*self.elndofn).reshape(self.elnodes,self.elndofn)    # body force property
-        self._trac      = np.zeros(self.elnodes*self.elndofn).reshape(self.elnodes,self.elndofn)  # traction propery
-        self._dirich    = np.zeros(self.elnodes*self.elndofn).reshape(self.elnodes,self.elndofn)  # dirichlet data
-        self._pforce    = np.zeros(self.elnodes*self.elndofn).reshape(self.elnodes,self.elndofn)  # point force data
+        # self._coord     = np.zeros(self.elnodes*3).reshape(self.elnodes,3)                        # coordinates
+        # self._prop      = np.zeros(self.elnodes*self.nprop).reshape(self.elnodes,self.nprop)      # stiffness property
+        # self._bf        = np.zeros(self.elnodes*self.elndofn).reshape(self.elnodes,self.elndofn)    # body force property
+        # self._trac      = np.zeros(self.elnodes*self.elndofn).reshape(self.elnodes,self.elndofn)  # traction propery
+        # self._dirich    = np.zeros(self.elnodes*self.elndofn).reshape(self.elnodes,self.elndofn)  # dirichlet data
+        # self._pforce    = np.zeros(self.elnodes*self.elndofn).reshape(self.elnodes,self.elndofn)  # point force data
 
         # data processing arrays, id,ien
         # ideqn(local node number, local dofn) -> global equation number
         # ideqn >= 0 if (node,dofn) is not a dirichlet dofn -1 other wise
-        self._ideqn  = np.zeros(self.elnodes*self.elndofn).reshape(self.elnodes,self.elndofn)
+        # self._ideqn  = np.zeros(self.elnodes*self.elndofn).reshape(self.elnodes,self.elndofn)
         
         # get gauss and shape
         self.gg   = getgauss(ndim=self.ndime,npoints=self.ninteg)
@@ -176,8 +176,44 @@ class ElemBase():
         self.dirich = dirich
         self.trac   = trac
         self.ideqn  = ideqn
-        
+
+
     def create_global_Kf(self):
+        # efficient version using numpy
+        # filter rhs
+        row   = self.ideqn.ravel(order='C')
+        data  = self.erhs.ravel(order='C')
+        mask  = row > -1
+        idrow = row[mask]
+        idcol = [0]*len(idrow)
+        data  = data[mask]
+        tt    = (data,(idrow,idcol))
+        
+        self.fdata = data
+        self.frow  = idrow
+        self.fcol  = idcol
+        
+        self.rhs = sparse.coo_matrix(tt,shape=(self.gdofn,1),dtype='float64')
+
+        # filter estiff to exclude dirichlet data
+        
+        mask2         = np.outer(mask,mask)
+        rowidx,colidx = np.indices((self.edofn,self.edofn))
+        kk2           = self.estiff[mask2].ravel(order='C')
+        rowidx2       = rowidx[mask2].ravel(order='C')
+        colidx2       = colidx[mask2].ravel(order='C')
+        idrow2        = row[rowidx2]
+        idcol2        = row[colidx2]
+        
+        tt = (kk2,(idrow2,idcol2))
+        self.kmatrix = sparse.coo_matrix(tt,shape=(self.gdofn,self.gdofn),dtype='float64')
+        
+        self.kdata = kk2
+        self.krow  = idrow2
+        self.kcol  = idcol2
+        
+    def create_global_Kf_old(self):
+        # less efficient version in pure Python
         # rhs
         row  = self.ideqn.ravel(order='C')
         data = self.erhs.ravel(order='C')
@@ -187,7 +223,7 @@ class ElemBase():
         fdata    = [ data[i] for i,r in enumerate(row) if r >=0 ]
         fcol     = np.zeros(len(fdata))
         tt       = (fdata,(frow,fcol))
-        self.rhs = sparse.csr_matrix(tt,shape=(self.gdofn,1),dtype='float64')
+        self.rhs = sparse.coo_matrix(tt,shape=(self.gdofn,1),dtype='float64')
 
         self.fdata = fdata
         self.frow  = frow
@@ -203,7 +239,7 @@ class ElemBase():
                     fcol.append(icol)
 
         tt = (fdata,(frow,fcol))
-        self.kmatrix = sparse.csr_matrix(tt,shape=(self.gdofn,self.gdofn),dtype='float64')
+        self.kmatrix = sparse.coo_matrix(tt,shape=(self.gdofn,self.gdofn),dtype='float64')
         
         self.kdata = fdata
         self.krow  = frow

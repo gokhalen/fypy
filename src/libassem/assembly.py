@@ -23,6 +23,9 @@ def assembly(fypymesh:FyPyMesh)->TOUTASS:
     kk  = sparse.coo_matrix(tt,shape=(gdofn,gdofn),dtype='float64');
     rhs = sparse.coo_matrix(tt,shape=(gdofn,1),dtype='float64');
 
+    karr   = np.asarray([0]); krow   = np.asarray([0]); kcol   = np.asarray([0])
+    rhsarr = np.asarray([0]); rhsrow = np.asarray([0]); rhscol = np.asarray([0])
+
     eldict = {}
 
     scipy_time = 0.0
@@ -49,11 +52,26 @@ def assembly(fypymesh:FyPyMesh)->TOUTASS:
         elem.compute()
 
         t1   = time.perf_counter()
-        kk  += elem.kmatrix
-        rhs += elem.rhs
+        #kk  += elem.kmatrix
+        #rhs += elem.rhs
+        
+        
+        karr   = np.concatenate([karr,elem.kdata])
+        krow   = np.concatenate([krow,elem.krow])
+        kcol   = np.concatenate([kcol,elem.kcol])
+        rhsarr = np.concatenate([rhsarr,elem.fdata])
+        rhsrow = np.concatenate([rhsrow,elem.frow])
+        rhscol = np.concatenate([rhscol,elem.fcol])
+        
+
         t2   = time.perf_counter()
         scipy_time += (t2-t1)
         
     
-        
+    t1   = time.perf_counter()
+    kk   = sparse.coo_matrix((karr,(krow,kcol)),shape=(gdofn,gdofn),dtype='float64');
+    rhs  = sparse.coo_matrix((rhsarr,(rhsrow,rhscol)),shape=(gdofn,1),dtype='float64');
+    t2   = time.perf_counter()
+    scipy_time += (t2-t1)
+
     return (kk,rhs,scipy_time)

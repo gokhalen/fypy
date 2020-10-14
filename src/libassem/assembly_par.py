@@ -77,6 +77,7 @@ def assembly_par(fypymesh:FyPyMesh,nprocs:int,chunksize:int)->TOUTASS:
     # initializer for sum
     kkrhs_zero = KKRhs(fypymesh.gdofn)
 
+    # imap with chunksize=1 seems to give best performance
     with mp.Pool(processes=nprocs) as pool:
         kkrhs_g = sum(pool.imap(mapelem,itr_elem,chunksize=chunksize),start=kkrhs_zero)
     
