@@ -16,6 +16,50 @@ ElemDataTuple=namedtuple('ElemDataTuple',['eltype',
                                           'gdofn'
                                           ])
 
+class FyPyMeshItr():
+    def __init__(self,mesh,start,end):
+        self.mesh  = mesh
+        self.start = start
+        self.end   = end
+        self.idx   = start
+
+    def __iter__(self):
+        self.idx = self.start
+        return self
+
+    def __next__(self):
+        if ( self.idx < self.end ):
+            
+            eltype = self.mesh.conn[self.idx][-1]
+            *nodes,= self.mesh.conn[self.idx][0:-1]
+            
+            coord  = np.asarray([self.mesh.coord[n-1]  for n in nodes])
+            prop   = np.asarray([self.mesh.prop[n-1]   for n in nodes])
+            bf     = np.asarray([self.mesh.bf[n-1]     for n in nodes])
+            pforce = np.asarray([self.mesh.pforce[n-1] for n in nodes])
+            dirich = np.asarray([self.mesh.dirich[n-1] for n in nodes])
+            trac   = np.asarray([self.mesh.trac[n-1]   for n in nodes])
+            ideqn  = np.asarray([self.mesh.ideqn[n-1]  for n in nodes])
+
+            # increment counter
+            self.idx +=1
+        else:
+            raise StopIteration('StopIteration Raised in fypymesh')
+            
+        return ElemDataTuple(eltype=eltype,
+                             nodes=nodes,
+                             coord=coord,
+                             prop=prop,
+                             bf=bf,
+                             pforce=pforce,
+                             dirich=dirich,
+                             trac=trac,
+                             ideqn=ideqn,
+                             ninteg=self.mesh.ninteg,
+                             gdofn=self.mesh.gdofn
+                             )
+
+
 class FyPyMesh():
     stflist = ['homogeneous','inclusion']
     
@@ -290,8 +334,7 @@ class FyPyMesh():
     def make_sparsity(self):
         # row, col
         pass
-
-
+    
     # default iterator which yields elements
     def __iter__(self):
         self.idx   = 0
