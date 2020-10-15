@@ -19,20 +19,28 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='FYPY: A finite element code written in Python')
     
     parser.add_argument('--nprocs',help='number of processes to use',required=False,type=int,default=1)
-    parser.add_argument('--chunksize',help='chunksize to use',required=False,type=int,default=16)
+    parser.add_argument('--chunksize',help='chunksize to use',required=False,type=int,default=1)
     parser.add_argument('--inputfile',help='input json file',required=False,type=str,default='data.json.in')
     parser.add_argument('--outputfile',help='output json file',required=False,type=str,default='data.json.out')
-    parser.add_argument('--partype',help='parallelization type: poolmap or async',required=False,type=str,default='async',choices=['poolmap','async'])
+    parser.add_argument('--partype',help='parallelization type: poolmap or async',required=False,type=str,default='poolmap',choices=['poolmap','async'])
+    solverlist = ['spsolve','bicg','bicgstab','cg','cgs','gmres','lgmres','minres','qmr','gcrotmk']
+    solverstr  = str(solverlist)
+    parser.add_argument('--solvertype',help=f'choose from: {solverstr}',required=False,type=str,default='spsolve',choices=solverlist)
+    parser.add_argument('--profile',help=f'runs the assembly through the profiler cProfile',required=False,type=str,default='False',choices=['True','False'])
+
+
 
     args = parser.parse_args()
     
-    meshfile  = args.inputfile
-    outfile   = args.outputfile
-    nprocs    = args.nprocs
-    chunksize = args.chunksize
-    partype   = args.partype
+    meshfile    = args.inputfile
+    outfile     = args.outputfile
+    nprocs      = args.nprocs
+    chunksize   = args.chunksize
+    partype     = args.partype
+    solvertype  = args.solvertype
+    profileflag = args.profile 
     
-    
+     
     start_time = time.perf_counter()
     
     print('FYPY: FYnite elements in PYthon ...executing fypy/main.py ')
@@ -48,10 +56,12 @@ if __name__ == '__main__':
     start_assem = time.perf_counter()
     
     # create stiffness matrix and rhs
-    # cProfile.run('kk,rhs,scipy_time = assembly(fypymesh)')
-
+    
     if ( nprocs == 1 ):
-        kk,rhs,scipy_time = assembly(fypymesh)
+        if ( profileflag == 'True'):
+            cProfile.run('kk,rhs,scipy_time = assembly(fypymesh)')
+        if (profileflag == 'False'):
+            kk,rhs,scipy_time = assembly(fypymesh)
     else:
         if (partype == 'poolmap'):
             print('Parallel (Mapped) assembly started..')
@@ -65,7 +75,7 @@ if __name__ == '__main__':
     # then solver
     start_sol = time.perf_counter()
     solver    = FyPySolver(kk,rhs);
-    solution  = solver.solve('bicg')
+    solution  = solver.solve(solvertype)
     end_sol   = time.perf_counter()
 
     start_out = time.perf_counter()

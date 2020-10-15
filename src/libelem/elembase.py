@@ -19,10 +19,10 @@ class ElemBase():
         self.gdofn  = gdofn
         
         # create sparse matrix - declared because these will be put into __slots__ in the future
-        data =(0,); row = (0,); col = (0,)
-        tt = (data,(row,col))
-        self.kmatrix = sparse.coo_matrix(tt,shape=(gdofn,gdofn),dtype='float64')
-        self.rhs     = sparse.coo_matrix(tt,shape=(gdofn,1),dtype='float64')
+        # data =(0,); row = (0,); col = (0,)
+        # tt = (data,(row,col))
+        # self.kmatrix = sparse.coo_matrix(tt,shape=(gdofn,gdofn),dtype='float64')
+        # self.rhs     = sparse.coo_matrix(tt,shape=(gdofn,1),dtype='float64')
         
         self.edofn   = self.elnodes*self.elndofn                                                  # total dofn in this element
 
@@ -177,7 +177,6 @@ class ElemBase():
         self.trac   = trac
         self.ideqn  = ideqn
 
-
     def create_global_Kf(self):
         # efficient version using numpy
         # filter rhs
@@ -187,13 +186,13 @@ class ElemBase():
         idrow = row[mask]
         idcol = [0]*len(idrow)
         data  = data[mask]
-        tt    = (data,(idrow,idcol))
+        # tt    = (data,(idrow,idcol))
         
         self.fdata = data
         self.frow  = idrow
         self.fcol  = idcol
         
-        self.rhs = sparse.coo_matrix(tt,shape=(self.gdofn,1),dtype='float64')
+        # self.rhs = sparse.coo_matrix(tt,shape=(self.gdofn,1),dtype='float64')
 
         # filter estiff to exclude dirichlet data
         
@@ -205,8 +204,8 @@ class ElemBase():
         idrow2        = row[rowidx2]
         idcol2        = row[colidx2]
         
-        tt = (kk2,(idrow2,idcol2))
-        self.kmatrix = sparse.coo_matrix(tt,shape=(self.gdofn,self.gdofn),dtype='float64')
+        # tt = (kk2,(idrow2,idcol2))
+        # self.kmatrix = sparse.coo_matrix(tt,shape=(self.gdofn,self.gdofn),dtype='float64')
         
         self.kdata = kk2
         self.krow  = idrow2

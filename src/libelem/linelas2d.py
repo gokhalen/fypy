@@ -15,6 +15,10 @@ class LinElas2D(ElemBase):
 
         super().__init__(ninteg=ninteg,gdofn=gdofn)
 
+    def stiffness_kernel_new(self,gausspts,shape,jaco,prop):
+        kk = np.eye(8,dtype='float64').reshape(8,8)
+        return kk
+
     def stiffness_kernel(self,gausspts,shape,jaco,prop):
 
         kk = np.zeros(8*8,dtype='float64').reshape(8,8)
