@@ -22,11 +22,13 @@ if __name__ == '__main__':
     parser.add_argument('--chunksize',help='chunksize to use',required=False,type=int,default=1)
     parser.add_argument('--inputfile',help='input json file',required=False,type=str,default='data.json.in')
     parser.add_argument('--outputfile',help='output json file',required=False,type=str,default='data.json.out')
-    parser.add_argument('--partype',help='parallelization type: poolmap or async',required=False,type=str,default='poolmap',choices=['poolmap','async'])
+    parser.add_argument('--partype',help='parallelization type: poolmap or async',required=False,
+                        type=str,default='poolmap',choices=['poolmap','async'])
     solverlist = ['spsolve','bicg','bicgstab','cg','cgs','gmres','lgmres','minres','qmr','gcrotmk']
     solverstr  = str(solverlist)
     parser.add_argument('--solvertype',help=f'choose from: {solverstr}',required=False,type=str,default='spsolve',choices=solverlist)
-    parser.add_argument('--profile',help=f'runs the assembly through the profiler cProfile',required=False,type=str,default='False',choices=['True','False'])
+    parser.add_argument('--profile',help=f'runs the assembly through the profiler cProfile',
+                        required=False,type=str,default='False',choices=['True','False'])
 
 
 
@@ -93,9 +95,9 @@ if __name__ == '__main__':
     solve_time = end_sol   - start_sol  
     out_time   = end_out   - start_out  
 
-    print(f'{total_time=},\n  {pre_time=},\n  {assem_time=},\n  {solve_time=},\n  {out_time=},\n {scipy_time=}\n')
-    print(f'{pre_time/total_time =},\n {assem_time/total_time =},\n'
+    print(f'{total_time=},\n{pre_time=},\n{assem_time=},\n{solve_time=},\n{out_time=},\n{scipy_time=}\n')
+    print(f'{pre_time/total_time =},\n{assem_time/total_time =},\n'
           f'{scipy_time/total_time=},\n'
-          f'{ solve_time/total_time =},\n {out_time/total_time =},\n')
+          f'{solve_time/total_time =},\n{out_time/total_time =},\n')
     
 

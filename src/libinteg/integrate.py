@@ -22,7 +22,8 @@ def integrate_parent(finteg:Callable,gauss:Iterable,shape:Iterable,data:Iterable
     funcgauss = map(finteg,gauss.pts,shape,jac,data)
     
     *wtjac,   = ( gg*jj.jdet  for gg,jj in zip(gauss.wts,jac) )
-    
+
+    # the expression inside the sum is a generator
     return sum((fg*wt for fg,wt in zip(funcgauss,wtjac)))
 
 

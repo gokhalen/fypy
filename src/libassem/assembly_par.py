@@ -152,4 +152,27 @@ def assembly_par(fypymesh:FyPyMesh,nprocs:int,chunksize:int)->TOUTASS:
 
 
 def assembly_async(fypymesh:FyPyMesh,nprocs:int,chunksize:int)->TOUTASS:
+    assert ( ( fypymesh.nelem % nprocs ) == 0 ),f'{fypymesh.nelem=} must be divisible by {nprocs=}'
+    gdofn  = fypymesh.gdofn
+    ninteg = fypymesh.ninteg
+    nstep  = int(fypymesh.nelem / nprocs)
+    
+    # create iterators
+    itrlist   = [ iter(FyPyMeshItr(fypymesh,i*(nstep),(i+1)*nstep)) for i in range(nprocs)]
+    maplist   = [ map(mapelem,itrlist[i])                           for i in range(nprocs)]
+    
+    with mp.Pool(processes=nprocs) as pool:
+        asynclist = [pool.apply_async(sum,(maplist[i],KKRhsRaw() )) for i in range(nprocs)]
+        reslist   = [res.get(timeout=None) for res in asynclist]
+
+    kkrhs_g=sum(reslist,KKRhsRaw())
+
+    tt  = (kkrhs_g.kdata,(kkrhs_g.krow,kkrhs_g.kcol))
+    kk  = sparse.coo_matrix(tt,shape=(gdofn,gdofn),dtype='float64');
+    
+    tt  = (kkrhs_g.rhsdata,(kkrhs_g.rhsrow,kkrhs_g.rhscol))
+    rhs = sparse.coo_matrix(tt,shape=(gdofn,1),dtype='float64');
+
+    scipy_time = 0.0
+        
     return (kk,rhs,scipy_time)
