@@ -10,8 +10,6 @@ class FyPySolver():
         self.rhs = rhs.todense()
 
     def solve(self,solver):
-        print(f'Solving using {solver}')
-        
         if (solver=='spsolve'):
             x = scipy.sparse.linalg.spsolve(self.kk,self.rhs)
         else:

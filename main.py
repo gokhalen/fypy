@@ -47,8 +47,11 @@ if __name__ == '__main__':
      
     ttotal = Timer('FyPy Total timer',verbose=0)
     with ttotal:
-
-        print('FyPy: Fynite elements in Python ...executing fypy/main.py ')
+        print('-'*80)
+        print(f'FyPy: Fynite elements in Python3 written by Nachiket Gokhale gokhalen@gmail.com')
+        print(f'-'*80)
+        print(f'Solving using {solvertype}')
+                
 
         tpre = Timer('Preprocessing timer',verbose=0)
         with tpre:
@@ -82,6 +85,7 @@ if __name__ == '__main__':
             fypymesh.make_output(outfile)
 
     digits = 3
+    
     print('-'*80)
     print(f'Preprocessing time \t= {tpre.elapsed:0.{digits}f}s \t {(tpre.elapsed/ttotal.elapsed)*100:0.{digits}f} %')    
     print(f'Assembly time \t\t= {tassem.elapsed:0.{digits}f}s  \t {(tassem.elapsed/ttotal.elapsed)*100:0.{digits}f}%')
@@ -91,6 +95,8 @@ if __name__ == '__main__':
     print('-'*80)
     print(f'Reduction time (approx for multiproc) = {reduction_time:0.{digits}f}s, \
           {(reduction_time/ttotal.elapsed)*100:0.{digits}f}% (of Total time) ')
+    print('-'*80)
+    print('Goodbye!')
     print('-'*80)
 
 
