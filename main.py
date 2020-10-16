@@ -58,7 +58,6 @@ if __name__ == '__main__':
     start_assem = time.perf_counter()
     
     # create stiffness matrix and rhs
-    
     if ( nprocs == 1 ):
         if ( profileflag == 'True'):
             cProfile.run('kk,rhs,scipy_time = assembly(fypymesh)')

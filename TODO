@@ -1,3 +1,14 @@
  1) Property checking of array index sizes in elembase
- 3)  Dictionary for initalizing element types and quad
+ 3) Dictionary for initalizing element types and quad
 
+
+Notes:
+Other Notes:
+1) To checkout specific tag, first clone the repo and then
+      "git checkout <tagname>" e.g. "git checkout v1.0"
+
+2) Tags are added with:
+      git tag -a v1.0 -m "Before Parallel Development"
+
+      -a means annotated
+      -m means message
