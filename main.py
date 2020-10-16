@@ -7,8 +7,11 @@ Created on Fri Jul 17 19:31:21 2020
 
 import sys,time
 import cProfile
-import argparse 
+import argparse
 
+from timerit import Timer
+
+# fypy imports 
 from src.libmesh   import *
 from src.libassem  import *
 from src.libsolve  import *
@@ -16,8 +19,7 @@ from src.libsolve  import *
 
 if __name__ == '__main__':
 
-    parser = argparse.ArgumentParser(description='FYPY: A finite element code written in Python')
-    
+    parser = argparse.ArgumentParser(description='FyPy: A finite element code written in Python')
     parser.add_argument('--nprocs',help='number of processes to use',required=False,type=int,default=1)
     parser.add_argument('--chunksize',help='chunksize to use',required=False,type=int,default=1)
     parser.add_argument('--inputfile',help='input json file',required=False,type=str,default='data.json.in')
@@ -43,60 +45,57 @@ if __name__ == '__main__':
     profileflag = args.profile 
     
      
-    start_time = time.perf_counter()
-    
-    print('FYPY: FYnite elements in PYthon ...executing fypy/main.py ')
+    ttotal = Timer('FyPy Total timer',verbose=0)
+    with ttotal:
 
-    start_pre  = time.perf_counter()
-    
-    fypymesh = FyPyMesh();
-    fypymesh.json_read(meshfile)
-    
-    end_pre = time.perf_counter()
+        print('FyPy: Fynite elements in Python ...executing fypy/main.py ')
+
+        tpre = Timer('Preprocessing timer',verbose=0)
+        with tpre:
+            fypymesh = FyPyMesh();
+            fypymesh.json_read(meshfile)
+
+        tassem = Timer(label='FyPy Assembly timer',verbose=0)
+        # create stiffness matrix and rhs
+        with tassem:
+            if ( nprocs == 1 ):
+                if ( profileflag == 'True'):
+                    cProfile.run('kk,rhs,reduction_time = assembly(fypymesh)')
+                if (profileflag == 'False'):
+                    kk,rhs,reduction_time = assembly(fypymesh)
+            else:
+                if (partype == 'poolmap'):
+                    print('Parallel (Mapped) assembly started..')
+                    kk,rhs,reduction_time = assembly_par(fypymesh,nprocs,chunksize)
+                if (partype == 'async'):
+                    print('Parallel (Async) assembly started..')
+                    kk,rhs,reduction_time = assembly_async(fypymesh,nprocs,chunksize)
+
+        tsolve = Timer('FyPy: Solver timer',verbose=0)
+        with tsolve:
+            solver    = FyPySolver(kk,rhs);
+            solution  = solver.solve(solvertype)
+
+        tout = Timer('Output timer',verbose=0)
+        with tout:
+            fypymesh.make_solution_from_rhs(solution)
+            fypymesh.make_output(outfile)
+
+    digits = 3
+    print('-'*80)
+    print(f'Preprocessing time \t= {tpre.elapsed:0.{digits}f}s \t {(tpre.elapsed/ttotal.elapsed)*100:0.{digits}f} %')    
+    print(f'Assembly time \t\t= {tassem.elapsed:0.{digits}f}s  \t {(tassem.elapsed/ttotal.elapsed)*100:0.{digits}f}%')
+    print(f'Solver time \t\t= {tsolve.elapsed:0.{digits}f}s \t {(tsolve.elapsed/ttotal.elapsed)*100:0.{digits}f} %')
+    print(f'Output time \t\t= {tout.elapsed:0.{digits}f}s \t {(tout.elapsed/ttotal.elapsed)*100:0.{digits}f} %')
+    print(f'Total time \t\t= {ttotal.elapsed:0.{digits}f}s\t {(ttotal.elapsed/ttotal.elapsed)*100:0.{digits}f} %')
+    print('-'*80)
+    print(f'Reduction time (approx for multiproc) = {reduction_time:0.{digits}f}s, \
+          {(reduction_time/ttotal.elapsed)*100:0.{digits}f}% (of Total time) ')
+    print('-'*80)
+
 
     
-    start_assem = time.perf_counter()
-    
-    # create stiffness matrix and rhs
-    if ( nprocs == 1 ):
-        if ( profileflag == 'True'):
-            cProfile.run('kk,rhs,scipy_time = assembly(fypymesh)')
-        if (profileflag == 'False'):
-            kk,rhs,scipy_time = assembly(fypymesh)
-    else:
-        if (partype == 'poolmap'):
-            print('Parallel (Mapped) assembly started..')
-            kk,rhs,scipy_time = assembly_par(fypymesh,nprocs,chunksize)
-        if (partype == 'async'):
-            print('Parallel (Async) assembly started..')
-            kk,rhs,scipy_time = assembly_async(fypymesh,nprocs,chunksize)
-    
-    end_assem = time.perf_counter()
-        
-    # then solver
-    start_sol = time.perf_counter()
-    solver    = FyPySolver(kk,rhs);
-    solution  = solver.solve(solvertype)
-    end_sol   = time.perf_counter()
-
-    start_out = time.perf_counter()
-    # then create output data    
-    fypymesh.make_solution_from_rhs(solution)
-    fypymesh.make_output(outfile)
-    end_out = time.perf_counter()
 
 
-    end_time = time.perf_counter()
-    
-    total_time = end_time  - start_time
-    pre_time   = end_pre   - start_pre  
-    assem_time = end_assem - start_assem
-    solve_time = end_sol   - start_sol  
-    out_time   = end_out   - start_out  
-
-    print(f'{total_time=},\n{pre_time=},\n{assem_time=},\n{solve_time=},\n{out_time=},\n{scipy_time=}\n')
-    print(f'{pre_time/total_time =},\n{assem_time/total_time =},\n'
-          f'{scipy_time/total_time=},\n'
-          f'{solve_time/total_time =},\n{out_time/total_time =},\n')
     
 

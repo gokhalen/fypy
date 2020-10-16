@@ -1,10 +1,10 @@
 from scipy import sparse
 import scipy.sparse.linalg
 import numpy as np
-import time
+from timerit import Timer
 
+# from 
 from ..libmesh import *
-
 # get elements
 from .assutils import *
 
@@ -26,9 +26,10 @@ def assembly(fypymesh:FyPyMesh)->TOUTASS:
     karr   = np.asarray([0]); krow   = np.asarray([0]); kcol   = np.asarray([0])
     rhsarr = np.asarray([0]); rhsrow = np.asarray([0]); rhscol = np.asarray([0])
 
-    eldict = {}
-
-    scipy_time = 0.0
+    # we refer to the process of combining element matrices and vectors as 'reduction'
+    reduction_time = 0.0
+    treduc         = Timer('FyPy Assembly (Reduction) Timer',verbose=0)
+    
     for ielem in range(1,fypymesh.nelem+1):
         eltype = fypymesh.conn[ielem-1][-1]
         elem   = getelem(eltype,ninteg,gdofn)
@@ -51,27 +52,20 @@ def assembly(fypymesh:FyPyMesh)->TOUTASS:
         # compute
         elem.compute()
 
-        t1   = time.perf_counter()
         #kk  += elem.kmatrix
         #rhs += elem.rhs
-        
-        
-        karr   = np.concatenate([karr,elem.kdata])
-        krow   = np.concatenate([krow,elem.krow])
-        kcol   = np.concatenate([kcol,elem.kcol])
-        rhsarr = np.concatenate([rhsarr,elem.fdata])
-        rhsrow = np.concatenate([rhsrow,elem.frow])
-        rhscol = np.concatenate([rhscol,elem.fcol])
-        
+        with treduc:
+            karr   = np.concatenate([karr,elem.kdata])
+            krow   = np.concatenate([krow,elem.krow])
+            kcol   = np.concatenate([kcol,elem.kcol])
+            rhsarr = np.concatenate([rhsarr,elem.fdata])
+            rhsrow = np.concatenate([rhsrow,elem.frow])
+            rhscol = np.concatenate([rhscol,elem.fcol])
+        reduction_time += treduc.elapsed
 
-        t2   = time.perf_counter()
-        scipy_time += (t2-t1)
-        
+    with treduc:
+        kk   = sparse.coo_matrix((karr,(krow,kcol)),shape=(gdofn,gdofn),dtype='float64');
+        rhs  = sparse.coo_matrix((rhsarr,(rhsrow,rhscol)),shape=(gdofn,1),dtype='float64');
+    reduction_time += treduc.elapsed
     
-    t1   = time.perf_counter()
-    kk   = sparse.coo_matrix((karr,(krow,kcol)),shape=(gdofn,gdofn),dtype='float64');
-    rhs  = sparse.coo_matrix((rhsarr,(rhsrow,rhscol)),shape=(gdofn,1),dtype='float64');
-    t2   = time.perf_counter()
-    scipy_time += (t2-t1)
-
-    return (kk,rhs,scipy_time)
+    return (kk,rhs,reduction_time)

@@ -1,7 +1,7 @@
 import scipy.sparse.linalg
 import numpy as np
-import time
 import multiprocessing as mp
+from timerit import Timer
 
 from ..libmesh import *
 from scipy import sparse
@@ -105,7 +105,6 @@ def assembly_par(fypymesh:FyPyMesh,nprocs:int,chunksize:int)->TOUTASS:
     # kk  = sparse.coo_matrix(tt,shape=(gdofn,gdofn),dtype='float64');
     # rhs = sparse.coo_matrix(tt,shape=(gdofn,1),dtype='float64');
 
-    scipy_time = 0.0
 
     itr_elem = iter(FyPyMeshItr(fypymesh,0,fypymesh.nelem))
 
@@ -119,36 +118,16 @@ def assembly_par(fypymesh:FyPyMesh,nprocs:int,chunksize:int)->TOUTASS:
     # imap with chunksize=1 seems to give best performance
     with mp.Pool(processes=nprocs) as pool:
         kkrhs_g = sum(pool.imap(mapelem,itr_elem,chunksize=chunksize),start=kkrhs_zero)
-    
-    '''
-    for ielem1, tt in enumerate(itr_elem):
-        ielem  = ielem1+1
-        eltype = tt.eltype
-        elem   = getelem(eltype,ninteg,gdofn)
-        nn     = tt.nodes
-        coord  = tt.coord
-        prop   = tt.prop
-        bf     = tt.bf
-        pforce = tt.pforce
-        dirich = tt.dirich
-        trac   = tt.trac
-        ideqn  = tt.ideqn
 
-
-        # kkmap,rhsmap=mapelem(tt)
-        kkrhs_e     = mapelem(tt)
-        t1          = time.perf_counter()
-        kkrhs_g    += kkrhs_e
-        t2          = time.perf_counter()
-        scipy_time += (t2-t1)
-    '''
-    tt  = (kkrhs_g.kdata,(kkrhs_g.krow,kkrhs_g.kcol))
-    kk  = sparse.coo_matrix(tt,shape=(gdofn,gdofn),dtype='float64');
+    treduc = Timer('FyPy Reduction Time',verbose=0)
+    with treduc:
+        tt  = (kkrhs_g.kdata,(kkrhs_g.krow,kkrhs_g.kcol))
+        kk  = sparse.coo_matrix(tt,shape=(gdofn,gdofn),dtype='float64');
     
-    tt  = (kkrhs_g.rhsdata,(kkrhs_g.rhsrow,kkrhs_g.rhscol))
-    rhs = sparse.coo_matrix(tt,shape=(gdofn,1),dtype='float64');
+        tt  = (kkrhs_g.rhsdata,(kkrhs_g.rhsrow,kkrhs_g.rhscol))
+        rhs = sparse.coo_matrix(tt,shape=(gdofn,1),dtype='float64');
        
-    return (kk,rhs,scipy_time)
+    return (kk,rhs,treduc.elapsed)
 
 
 def assembly_async(fypymesh:FyPyMesh,nprocs:int,chunksize:int)->TOUTASS:
@@ -165,14 +144,13 @@ def assembly_async(fypymesh:FyPyMesh,nprocs:int,chunksize:int)->TOUTASS:
         asynclist = [pool.apply_async(sum,(maplist[i],KKRhsRaw() )) for i in range(nprocs)]
         reslist   = [res.get(timeout=None) for res in asynclist]
 
-    kkrhs_g=sum(reslist,KKRhsRaw())
+    treduc = Timer('FyPy Reduction Time',verbose=0)
+    with treduc:
+        kkrhs_g=sum(reslist,KKRhsRaw())
+        tt  = (kkrhs_g.kdata,(kkrhs_g.krow,kkrhs_g.kcol))
+        kk  = sparse.coo_matrix(tt,shape=(gdofn,gdofn),dtype='float64');
 
-    tt  = (kkrhs_g.kdata,(kkrhs_g.krow,kkrhs_g.kcol))
-    kk  = sparse.coo_matrix(tt,shape=(gdofn,gdofn),dtype='float64');
-    
-    tt  = (kkrhs_g.rhsdata,(kkrhs_g.rhsrow,kkrhs_g.rhscol))
-    rhs = sparse.coo_matrix(tt,shape=(gdofn,1),dtype='float64');
-
-    scipy_time = 0.0
+        tt  = (kkrhs_g.rhsdata,(kkrhs_g.rhsrow,kkrhs_g.rhscol))
+        rhs = sparse.coo_matrix(tt,shape=(gdofn,1),dtype='float64');
         
-    return (kk,rhs,scipy_time)
+    return (kk,rhs,treduc.elapsed)

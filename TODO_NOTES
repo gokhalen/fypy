@@ -15,3 +15,5 @@ Other Notes:
 
 3) Tags are pushed with:
       git push origin --tags
+
+More: https://www.drupixels.com/blog/git-tags-guide-create-delete-push-tags-remote-and-much-more
