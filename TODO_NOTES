@@ -12,3 +12,6 @@ Other Notes:
 
       -a means annotated
       -m means message
+
+3) Tags are pushed with:
+      git push origin --tags
