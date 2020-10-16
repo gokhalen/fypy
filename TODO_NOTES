@@ -1,3 +1,4 @@
+ 0) Eval function to call assemblies in main
  1) Property checking of array index sizes in elembase
  3) Dictionary for initalizing element types and quad
 

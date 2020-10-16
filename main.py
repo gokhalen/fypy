@@ -24,15 +24,13 @@ if __name__ == '__main__':
     parser.add_argument('--chunksize',help='chunksize to use',required=False,type=int,default=1)
     parser.add_argument('--inputfile',help='input json file',required=False,type=str,default='data.json.in')
     parser.add_argument('--outputfile',help='output json file',required=False,type=str,default='data.json.out')
-    parser.add_argument('--partype',help='parallelization type: poolmap or async',required=False,
-                        type=str,default='poolmap',choices=['poolmap','async'])
+    parser.add_argument('--partype',help='parallelization type: serial poolmap or async',required=False,
+                        type=str,default='serial',choices=['serial','poolmap','async'])
     solverlist = ['spsolve','bicg','bicgstab','cg','cgs','gmres','lgmres','minres','qmr','gcrotmk']
     solverstr  = str(solverlist)
     parser.add_argument('--solvertype',help=f'choose from: {solverstr}',required=False,type=str,default='spsolve',choices=solverlist)
     parser.add_argument('--profile',help=f'runs the assembly through the profiler cProfile',
                         required=False,type=str,default='False',choices=['True','False'])
-
-
 
     args = parser.parse_args()
     
@@ -61,7 +59,7 @@ if __name__ == '__main__':
         tassem = Timer(label='FyPy Assembly timer',verbose=0)
         # create stiffness matrix and rhs
         with tassem:
-            if ( nprocs == 1 ):
+            if ( partype == 'serial' ):
                 if ( profileflag == 'True'):
                     cProfile.run('kk,rhs,reduction_time = assembly(fypymesh)')
                 if (profileflag == 'False'):
@@ -93,8 +91,9 @@ if __name__ == '__main__':
     print(f'Output time \t\t= {tout.elapsed:0.{digits}f}s \t {(tout.elapsed/ttotal.elapsed)*100:0.{digits}f} %')
     print(f'Total time \t\t= {ttotal.elapsed:0.{digits}f}s\t {(ttotal.elapsed/ttotal.elapsed)*100:0.{digits}f} %')
     print('-'*80)
-    print(f'Reduction time (approx for multiproc) = {reduction_time:0.{digits}f}s, \
-          {(reduction_time/ttotal.elapsed)*100:0.{digits}f}% (of Total time) ')
+    print(f'Reduction time (approx for multiproc) = {reduction_time:0.{digits}f}s,\
+    {(reduction_time/ttotal.elapsed)*100:0.{digits}f}% (of Total time) ')
+    
     print('-'*80)
     print('Goodbye!')
     print('-'*80)
