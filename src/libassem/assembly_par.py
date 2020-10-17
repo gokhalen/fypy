@@ -96,7 +96,7 @@ def mapelem(tt):
     # return (elem.kmatrix,elem.rhs)
     return kkrhs_e
 
-def assembly_par(fypymesh:FyPyMesh,nprocs:int,chunksize:int)->TOUTASS:
+def assembly_poolmap(fypymesh:FyPyMesh,nprocs:int,chunksize:int)->TOUTASS:
     gdofn  = fypymesh.gdofn
     ninteg = fypymesh.ninteg
     

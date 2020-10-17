@@ -1,6 +1,7 @@
- 0) Eval function to call assemblies in main
- 1) Property checking of array index sizes in elembase
- 3) Dictionary for initalizing element types and quad
+  1) Update FyPy Class
+  2) Numba for stiffness_kernel
+ 10) Property checking of array index sizes in elembase
+ 12) Dictionary for initalizing element types and quad
 
 
 Notes:

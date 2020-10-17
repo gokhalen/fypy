@@ -14,7 +14,8 @@ from typing import Union,Tuple
 ss         = sparse.coo_matrix
 TOUTASS    = Tuple[ss,ss]
 
-def assembly(fypymesh:FyPyMesh)->TOUTASS:
+def assembly_serial(fypymesh:FyPyMesh,dummy1,dummy2)->TOUTASS:
+    # dummy arguments to ensure conistent interface across assembly routines
     gdofn  = fypymesh.gdofn
     ninteg = fypymesh.ninteg
     
