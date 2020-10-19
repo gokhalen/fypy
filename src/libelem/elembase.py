@@ -51,7 +51,7 @@ class ElemBase():
         fshape    = getshape(ndim=self.ndime)
         *self.ss, = map(fshape,self.gg.pts)
         self.ss   = tuple(self.ss)
-
+        
     @property
     def ideqn(self):
         return self._ideqn
