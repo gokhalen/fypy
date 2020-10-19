@@ -58,8 +58,7 @@ if __name__ == '__main__':
               digits=3)
 
     
-    print('Goodbye!')
-    print('-'*80)
+    goodbye()
 
 
     

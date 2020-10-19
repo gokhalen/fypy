@@ -88,7 +88,14 @@ class TestLibElem(TestFyPy):
         tt   = (data,(row,col))
         expstiff = sparse.coo_matrix(tt,shape=(gdofn,gdofn),dtype='float64')
 
-        error = scipy.sparse.linalg.norm(expstiff-elas1d.kmatrix) 
+        # since the element does not create the stiffness matrix as a global sparse matrix
+        # we have to create it manually
+
+        data2 = elas1d.kdata; row2 = elas1d.krow; col2 = elas1d.kcol
+        tt2   = (data2,(row2,col2))
+        actstiff = sparse.coo_matrix(tt2,shape=(gdofn,gdofn),dtype='float64')
+
+        error = scipy.sparse.linalg.norm(expstiff-actstiff) 
         self.assertTrue(error < closeatol,msg='Global stiffness matrices do not match in test_linelas1d')
 
         # check right hand side
@@ -98,7 +105,13 @@ class TestLibElem(TestFyPy):
         tt = (data,(row,col))
         exprhs = sparse.coo_matrix(tt,shape=(gdofn,1),dtype='float64')
 
-        error = scipy.sparse.linalg.norm(exprhs-elas1d.rhs)
+        # since the element does not create the rhs as a global sparse vector
+        # we have to manually create it
+        data2 = elas1d.fdata; row2 = elas1d.frow; col2=elas1d.fcol
+        tt2 = (data2,(row2,col2))
+        actrhs = sparse.coo_matrix(tt2,shape=(gdofn,1),dtype='float64')
+
+        error = scipy.sparse.linalg.norm(exprhs-actrhs)
         self.assertTrue(error < closeatol,msg='Global rhs vectors do not match in test_linelas1d')
 
 
@@ -129,9 +142,9 @@ class TestLibElem(TestFyPy):
         expsol   = expsol.reshape(gdofn,)
 
         # create global force and matrix
-        data =(0,); row = (0,); col = (0,); tt = (data,(row,col))
-        grhs     = sparse.coo_matrix(tt,shape=(gdofn,1),dtype='float64')
-        gkmatrix = sparse.coo_matrix(tt,shape=(gdofn,gdofn),dtype='float64')
+        # data =(0,); row = (0,); col = (0,); tt = (data,(row,col))
+        # grhs     = sparse.coo_matrix(tt,shape=(gdofn,1),dtype='float64')
+        # gkmatrix = sparse.coo_matrix(tt,shape=(gdofn,gdofn),dtype='float64')
 
 
         # quantities which do not change from element to element are outside the loop
@@ -146,6 +159,8 @@ class TestLibElem(TestFyPy):
         ideqnarray = list(range(-1,nelem))
         ideqnarray[-1] = -1
 
+        karr   = np.asarray([0]); krow   = np.asarray([0]); kcol   = np.asarray([0])
+        rhsarr = np.asarray([0]); rhsrow = np.asarray([0]); rhscol = np.asarray([0])
         
         elas1d = LinElas1D(ninteg=ninteg,gdofn=gdofn)
         
@@ -164,9 +179,20 @@ class TestLibElem(TestFyPy):
 
             elas1d.setdata(coord=coord,prop=prop,bf=bf,pforce=pforce,dirich=dirich,trac=trac,ideqn=ideqn)
             elas1d.compute()
+        
+            karr   = np.concatenate([karr,elas1d.kdata])
+            krow   = np.concatenate([krow,elas1d.krow])
+            kcol   = np.concatenate([kcol,elas1d.kcol])
+            rhsarr = np.concatenate([rhsarr,elas1d.fdata])
+            rhsrow = np.concatenate([rhsrow,elas1d.frow])
+            rhscol = np.concatenate([rhscol,elas1d.fcol])
 
-            gkmatrix += elas1d.kmatrix
-            grhs     += elas1d.rhs
+            #gkmatrix += elas1d.kmatrix
+            #grhs     += elas1d.rhs
+            
+        # create the global force and matrix
+        gkmatrix = sparse.coo_matrix((karr,(krow,kcol)),shape=(gdofn,gdofn),dtype='float64');
+        grhs    = sparse.coo_matrix((rhsarr,(rhsrow,rhscol)),shape=(gdofn,1),dtype='float64');
 
         x,exitCode = scipy.sparse.linalg.bicg(gkmatrix,grhs.todense(),atol=closeatol)
 
@@ -209,10 +235,9 @@ class TestLibElem(TestFyPy):
         expsol   = expsol.reshape(gdofn,)
 
         # create global force and matrix
-        data =(0,); row = (0,); col = (0,); tt = (data,(row,col))
-        grhs     = sparse.coo_matrix(tt,shape=(gdofn,1),dtype='float64')
-        gkmatrix = sparse.coo_matrix(tt,shape=(gdofn,gdofn),dtype='float64')
-
+        # data =(0,); row = (0,); col = (0,); tt = (data,(row,col))
+        # grhs     = sparse.coo_matrix(tt,shape=(gdofn,1),dtype='float64')
+        # gkmatrix = sparse.coo_matrix(tt,shape=(gdofn,gdofn),dtype='float64')
 
         # quantities which do not change from element to element are outside the loop
         coord  = np.zeros(6,dtype='float64').reshape(2,3)
@@ -224,7 +249,9 @@ class TestLibElem(TestFyPy):
 
         ideqnarray = list(range(-1,nelem))
         ideqnarray[-1] = -1
-
+        
+        karr   = np.asarray([0]); krow   = np.asarray([0]); kcol   = np.asarray([0])
+        rhsarr = np.asarray([0]); rhsrow = np.asarray([0]); rhscol = np.asarray([0])
         
         elas1d = LinElas1D(ninteg=ninteg,gdofn=gdofn)
         
@@ -248,9 +275,18 @@ class TestLibElem(TestFyPy):
             elas1d.setdata(coord=coord,prop=prop,bf=bf,pforce=pforce,dirich=dirich,trac=trac,ideqn=ideqn)
             elas1d.compute()
 
-            gkmatrix += elas1d.kmatrix
-            grhs     += elas1d.rhs
-
+            karr   = np.concatenate([karr,elas1d.kdata])
+            krow   = np.concatenate([krow,elas1d.krow])
+            kcol   = np.concatenate([kcol,elas1d.kcol])
+            rhsarr = np.concatenate([rhsarr,elas1d.fdata])
+            rhsrow = np.concatenate([rhsrow,elas1d.frow])
+            rhscol = np.concatenate([rhscol,elas1d.fcol])
+            
+            # gkmatrix += elas1d.kmatrix
+            # grhs     += elas1d.rhs
+        gkmatrix = sparse.coo_matrix((karr,(krow,kcol)),shape=(gdofn,gdofn),dtype='float64');
+        grhs     = sparse.coo_matrix((rhsarr,(rhsrow,rhscol)),shape=(gdofn,1),dtype='float64');
+        
         x,exitCode = scipy.sparse.linalg.bicg(gkmatrix,grhs.todense(),atol=closeatol)
         # print('solution= ',x,'expected solution=',expsol,'rhs=',grhs.todense())
         error = np.linalg.norm(expsol-x) 
@@ -286,9 +322,9 @@ class TestLibElem(TestFyPy):
         expsol   = expsol.reshape(gdofn,)
 
         # create global force and matrix
-        data =(0,); row = (0,); col = (0,); tt = (data,(row,col))
-        grhs     = sparse.coo_matrix(tt,shape=(gdofn,1),dtype='float64')
-        gkmatrix = sparse.coo_matrix(tt,shape=(gdofn,gdofn),dtype='float64')
+        # data =(0,); row = (0,); col = (0,); tt = (data,(row,col))
+        # grhs     = sparse.coo_matrix(tt,shape=(gdofn,1),dtype='float64')
+        # gkmatrix = sparse.coo_matrix(tt,shape=(gdofn,gdofn),dtype='float64')
 
 
         # quantities which do not change from element to element are outside the loop
@@ -301,6 +337,9 @@ class TestLibElem(TestFyPy):
 
         ideqnarray = list(range(0,nelem+1))
         ideqnarray[-1] = -1
+
+        karr   = np.asarray([0]); krow   = np.asarray([0]); kcol   = np.asarray([0])
+        rhsarr = np.asarray([0]); rhsrow = np.asarray([0]); rhscol = np.asarray([0])
         
         elas1d = LinElas1D(ninteg=ninteg,gdofn=gdofn)
         
@@ -326,9 +365,19 @@ class TestLibElem(TestFyPy):
             elas1d.setdata(coord=coord,prop=prop,bf=bf,pforce=pforce,dirich=dirich,trac=trac,ideqn=ideqn)
             elas1d.compute()
 
-            gkmatrix += elas1d.kmatrix
-            grhs     += elas1d.rhs
+            karr   = np.concatenate([karr,elas1d.kdata])
+            krow   = np.concatenate([krow,elas1d.krow])
+            kcol   = np.concatenate([kcol,elas1d.kcol])
+            rhsarr = np.concatenate([rhsarr,elas1d.fdata])
+            rhsrow = np.concatenate([rhsrow,elas1d.frow])
+            rhscol = np.concatenate([rhscol,elas1d.fcol])
 
+            # gkmatrix += elas1d.kmatrix
+            # grhs     += elas1d.rhs
+
+        # create the global force and matrix
+        gkmatrix   = sparse.coo_matrix((karr,(krow,kcol)),shape=(gdofn,gdofn),dtype='float64');
+        grhs       = sparse.coo_matrix((rhsarr,(rhsrow,rhscol)),shape=(gdofn,1),dtype='float64');
         x,exitCode = scipy.sparse.linalg.bicg(gkmatrix,grhs.todense(),atol=closeatol)
 
         error = np.linalg.norm(expsol-x) 
@@ -463,8 +512,8 @@ class TestLibElem(TestFyPy):
         elas2d.setdata(coord=coord,prop=prop,bf=bf,pforce=pforce,dirich=dirich,trac=trac,ideqn=ideqn)
         elas2d.compute()
 
-        gkmatrix   = elas2d.kmatrix
-        grhs       = elas2d.rhs
+        gkmatrix   = sparse.coo_matrix((elas2d.kdata,(elas2d.krow,elas2d.kcol)),shape=(3,3),dtype='float64');
+        grhs       = sparse.coo_matrix((elas2d.fdata,(elas2d.frow,elas2d.fcol)),shape=(3,1),    dtype='float64');
         x,exitCode = scipy.sparse.linalg.bicg(gkmatrix,grhs.todense(),atol=closeatol)
 
         expsol = np.asarray([0.2,0.2,0.0])
