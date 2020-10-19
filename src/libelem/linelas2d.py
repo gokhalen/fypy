@@ -1,7 +1,6 @@
 from .elembase import *
 import itertools
-# import copy
-# import sys
+import numba as nb
 
 class LinElas2D(ElemBase):
     
@@ -164,3 +163,14 @@ class LinElas2D(ElemBase):
 
     def rhs_point_force(self):
         return self.pforce.reshape(self.edofn)
+
+    # override elembases' compute_stiffness for fast numba implementation
+    def compute_stiffness(self):
+        self.compute_stiffness_nb(self.ninteg,self.gg,self.ss,self.jj,self.prop)
+
+    # specify njit function signature later
+    @staticmethod
+    @nb.njit
+    def compute_stiffness_nb(ninteg,gg,ss,jj,prop):
+        pass
+    

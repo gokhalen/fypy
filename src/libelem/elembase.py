@@ -50,6 +50,7 @@ class ElemBase():
         self.gg   = getgauss(ndim=self.ndime,npoints=self.ninteg)
         fshape    = getshape(ndim=self.ndime)
         *self.ss, = map(fshape,self.gg.pts)
+        self.ss   = tuple(self.ss)
 
     @property
     def ideqn(self):
@@ -147,8 +148,8 @@ class ElemBase():
         itr_  = itertools.repeat(self.coord)
         der_  = [s.der for s in self.ss]
         *self.jj, = map(fjaco,itr_,der_)
-
-
+        self.jj   = tuple(self.jj)
+        
     def compute_stiffness(self):
         self.estiff = integrate_parent(self.stiffness_kernel,self.gg,self.ss,self.propinterp,self.jj)
 

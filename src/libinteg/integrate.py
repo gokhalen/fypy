@@ -14,7 +14,7 @@ def integrate_parent(finteg:Callable,gauss:Iterable,shape:Iterable,data:Iterable
     
     # gauss : Iterable yielding Integ namedtuple corresponding to each integration point
     # shape : Iterable yielding Shape namedtuple corresponding to each integration point
-    # data  : Iterable yielding data for each integration point
+    # data  : Iterable yielding data (required by finteg) for each integration point
     # jac   : Iterable yielding Jacobian namedtuple for each integration point
 
     # wtjac is not passed to finteg because it does not need it to evaluate functions
