@@ -1,23 +1,32 @@
 import numba as nb
 import numpy as np
+
+
 # specify njit function signature later
 # will need changing data structures of arguments
 
-@nb.njit(fastmath=True)
-def compute_stiffness_nb(ninteg,gg,ss,jj,prop,kk):
+# NOTE: specifying data types speeds up Numba compilation time dramatically
+@nb.njit((nb.none)(nb.int64,nb.float64[:],nb.float64[:,:],nb.float64[:,:,:],nb.float64[:],nb.float64[:,:],nb.float64[:,:]),fastmath=True)
+def compute_stiffness_nb(ninteg,ggwts,ss,gder,jdet,prop,kk):
     DD  = np.zeros(9,dtype=nb.float64).reshape(3,3)
     DBb = np.zeros(6,dtype=nb.float64).reshape(3,2)
     BDB = np.zeros(4,dtype=nb.float64).reshape(2,2)
 
+    # DD  = np.zeros(9,dtype='float64').reshape(3,3)
+    # DBb = np.zeros(6,dtype='float64').reshape(3,2)
+    # BDB = np.zeros(4,dtype='float64').reshape(2,2)
+
+
     for iinte in range(ninteg*ninteg):
         # get wtjac
-        wtjac = gg.wts[iinte]*jj[iinte].jdet
+        wtjac = ggwts[iinte]*jdet[iinte]
         # interpolate properties
 
         propinterp = np.zeros(2,dtype=nb.float64)
+        # propinterp = np.zeros(2,dtype='float64')
         for iprop in range(2):
             for inode in range(4):
-                propinterp[iprop] += prop[inode][iprop]*ss[iinte].shape[inode]
+                propinterp[iprop] += prop[inode][iprop]*ss[iinte][inode]
 
         # interpolated properties
         _lambda = propinterp[0]
@@ -31,21 +40,19 @@ def compute_stiffness_nb(ninteg,gg,ss,jj,prop,kk):
 
 
         for bb in range(1,5):
-            B1 = jj[iinte].gder[bb-1][1-1]
-            B2 = jj[iinte].gder[bb-1][2-1]
+            B1 = gder[iinte][bb-1][1-1]
+            B2 = gder[iinte][bb-1][2-1]
 
             DBb[0][0] = DD[0][0]*B1 ; DBb[0][1] = DD[0][1]*B2
             DBb[1][0] = DD[0][1]*B1 ; DBb[1][1] = DD[1][1]*B2
             DBb[2][0] = DD[2][2]*B2 ; DBb[2][1] = DD[2][2]*B1
 
-
             for aa in range(1,bb+1):
-                B1 = jj[iinte].gder[aa-1][1-1]
-                B2 = jj[iinte].gder[aa-1][2-1]
+                B1 = gder[iinte][aa-1][1-1]
+                B2 = gder[iinte][aa-1][2-1]
 
                 BDB[0][0] = B1*DBb[0][0] + B2*DBb[2][0];  BDB[0][1] = B1*DBb[0][1] + B2*DBb[2][1]
                 BDB[1][0] = B2*DBb[1][0] + B1*DBb[2][0];  BDB[1][1] = B2*DBb[1][1] + B1*DBb[2][1]
-
 
                 for iii in range(1,3):
                     for jjj in range(1,3):
