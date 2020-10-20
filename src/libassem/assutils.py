@@ -104,5 +104,77 @@ def mapelem(tt):
     return kkrhs_e
 
 
+ElemDataTuple=namedtuple('ElemDataTuple',['eltype',
+                                          'element',
+                                          'nodes',
+                                          'coord',
+                                          'prop',
+                                          'bf',
+                                          'pforce',
+                                          'dirich',
+                                          'trac',
+                                          'ideqn',
+                                          'ninteg',
+                                          'gdofn'
+                                          ])
+
+class FyPyMeshItr():
+    def __init__(self,mesh,start,end):
+        self.mesh   = mesh
+        self.start  = start
+        self.end    = end
+        self.idx    = start
+        self.eldict = {} 
+
+    def __iter__(self):
+        self.idx    = self.start
+        self.eldict = {}
+        return self
+
+    def __next__(self):
+        if ( self.idx < self.end ):
+            
+            eltype = self.mesh.conn[self.idx][-1]
+            ninteg = self.mesh.ninteg
+            gdofn  = self.mesh.gdofn    
+
+            # store element in the iterator so that multiple processes will not
+            # use the same element and hence will not write to the same location
+
+            if  ( hh := (eltype+str(ninteg)))  not in self.eldict:
+                elem = getelem(eltype,ninteg,gdofn)
+                self.eldict[hh] = elem
+            else:
+                elem = self.eldict[hh]
+            
+            *nodes,= self.mesh.conn[self.idx][0:-1]
+            coord  = np.asarray([self.mesh.coord[n-1]  for n in nodes])
+            prop   = np.asarray([self.mesh.prop[n-1]   for n in nodes])
+            bf     = np.asarray([self.mesh.bf[n-1]     for n in nodes])
+            pforce = np.asarray([self.mesh.pforce[n-1] for n in nodes])
+            dirich = np.asarray([self.mesh.dirich[n-1] for n in nodes])
+            trac   = np.asarray([self.mesh.trac[n-1]   for n in nodes])
+            ideqn  = np.asarray([self.mesh.ideqn[n-1]  for n in nodes])
+
+            # increment counter
+            self.idx +=1
+        else:
+            raise StopIteration('StopIteration Raised in fypymesh')
+            
+        return ElemDataTuple(eltype=eltype,
+                             element=None,
+                             nodes=nodes,
+                             coord=coord,
+                             prop=prop,
+                             bf=bf,
+                             pforce=pforce,
+                             dirich=dirich,
+                             trac=trac,
+                             ideqn=ideqn,
+                             ninteg=self.mesh.ninteg,
+                             gdofn=self.mesh.gdofn
+                             )
+
+
     
 

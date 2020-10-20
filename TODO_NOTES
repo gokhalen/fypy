@@ -1,8 +1,6 @@
   1) Update FyPy Class
-  2) Numba for stiffness_kernel
-  3) Create a Numba Element by Inheritance
- 10) Property checking of array index sizes in elembase
- 12) Dictionary for initalizing element types and quad
+ 12) Dictionary for initalizing element types and quadrature
+ 14) Numbaize jaco routines, especially jaco2d
 
 
 Notes:
