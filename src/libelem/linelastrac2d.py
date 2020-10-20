@@ -4,7 +4,6 @@ from .elembase import *
 class LinElasTrac2D(ElemBase):
 
     def __init__(self,ninteg,gdofn):
-        self.eltype  = 'linelastrac2d'
         self.elnodes  = 2
         self.elndofn  = 2
         self.ndime    = 1

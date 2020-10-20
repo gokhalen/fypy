@@ -12,7 +12,6 @@ class ElemBase():
 
     def __init__(self,ninteg=3,gdofn=None):
         
-        # eltype: element type, string
         # ninteg: integration points, integer
         # gdofn : number of global degrees of freedom in the system
         self.ninteg = ninteg
@@ -157,7 +156,7 @@ class ElemBase():
         # rhs contribution comes from 1) body force 2) traction 3) dirichlet
         # body force contribution
         self.erhsbf    = integrate_parent(self.rhs_bf_kernel,self.gg,self.ss,self.bfinterp,self.jj)
-        
+
         self.erhsdir   = -self.estiff@((self.dirich).ravel(order='C'))
         
         # all elements  will implement rhs_trac_kernel; continuum elements will return zero; boundary elements will do the correct integration
