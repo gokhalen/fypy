@@ -82,7 +82,8 @@ class KKRhsRaw():
         return out
 
 def mapelem(tt):
-    elem = getelem(tt.eltype,tt.ninteg,tt.gdofn)
+    # elem = getelem(tt.eltype,tt.ninteg,tt.gdofn)
+    elem = tt.element
     elem.setdata(coord=tt.coord  , prop=tt.prop, bf=tt.bf,      pforce=tt.pforce,
                  dirich=tt.dirich, trac=tt.trac, ideqn=tt.ideqn                 )
     elem.compute()
@@ -162,7 +163,7 @@ class FyPyMeshItr():
             raise StopIteration('StopIteration Raised in fypymesh')
             
         return ElemDataTuple(eltype=eltype,
-                             element=None,
+                             element=elem,
                              nodes=nodes,
                              coord=coord,
                              prop=prop,

@@ -1,7 +1,7 @@
-  1) Update FyPy Class
- 12) Dictionary for initalizing element types and quadrature
+ 10) Put the numbaized stiffness kernel as a staticmethod in the numba class
+ 11) Make ninteg a element property
  14) Numbaize jaco routines, especially jaco2d
-
+ 
 
 Notes:
 Other Notes:
@@ -16,5 +16,9 @@ Other Notes:
 
 3) Tags are pushed with:
       git push origin --tags
+
+4) "git tag" shows all tags
+
+5) "git tag -d <tagname>" deletes tag
 
 More: https://www.drupixels.com/blog/git-tags-guide-create-delete-push-tags-remote-and-much-more
