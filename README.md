@@ -1,6 +1,6 @@
 # fypy: A Python3 based 2D linear elasticity finite element code
 
-Dependencies: Numpy, SciPy and Json, timerit and multiprocessing
+Dependencies: numpy, numba, scipy, json, timerit and multiprocessing
 
 To test the code, do the following:
 

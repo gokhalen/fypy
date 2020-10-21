@@ -1,4 +1,5 @@
 import numpy as np
+import numba as nb
 from typing import List,Tuple,Iterable
 from collections import namedtuple
 
@@ -48,13 +49,15 @@ def jaco1d(pp:np.ndarray,shpder:np.ndarray)->Jaco:
 
     return Jaco(jdet=jdet,jaco=jaco,gder=gder)
 
-def jaco2d(pp:Iterable,shpder)->Jaco:
+# replaced by Numba 
+def jaco2dpy(pp:Iterable,shpder)->Jaco:
     # pp:     Iterable yielding 4 3d points (np array). the third coordinate (z) is ignored.
     # shpder: Derivatives of shape functions in parent domain at particular integration point
     # can also be done via xvec,yvec,zvec = zip(*pp)
 
     # output -> jdet,jaco and gder (global derivatives) at a particular integration point
-    
+
+
     xvec = np.asarray([p[0] for p in pp])
     yvec = np.asarray([p[1] for p in pp])
     xshp = shpder[:,0]
@@ -76,6 +79,33 @@ def jaco2d(pp:Iterable,shpder)->Jaco:
     gder    = shpder@jacoinv
     
     return Jaco(jdet=jdet,jaco=jaco,gder=gder)
+
+@nb.njit((nb.float64[:,:],nb.float64[:]),fastmath=True)
+def jaco2dnumba(pp:Iterable,shpder)->Jaco:
+    pass
+
+@nb.njit((nb.float64[:,::1],nb.float64[:,::1]),fastmath=True)
+def jaco2d(pp:Iterable,shpder)->Jaco:
+    xvec = pp[:,0]
+    yvec = pp[:,1]  
+    xshp = shpder[:,0]
+    yshp = shpder[:,1]
+    
+    x1 = xvec[0]*xshp[0] + xvec[1]*xshp[1] + xvec[2]*xshp[2] + xvec[3]*xshp[3]  
+    x2 = xvec[0]*yshp[0] + xvec[1]*yshp[1] + xvec[2]*yshp[2] + xvec[3]*yshp[3]  
+    y1 = yvec[0]*xshp[0] + yvec[1]*xshp[1] + yvec[2]*xshp[2] + yvec[3]*xshp[3]  
+    y2 = yvec[0]*yshp[0] + yvec[1]*yshp[1] + yvec[2]*yshp[2] + yvec[3]*yshp[3] 
+
+    jaco = np.asarray([[ x1, x2 ],[ y1, y2 ]])
+    jdet = np.linalg.det(jaco)
+    
+    assert ( jdet > zerotol ), 'jdet in is < 0 in jaco2d (numba)'
+    jacoinv = (1.0/jdet)*np.asarray([ [ y2, -x2],  [ -y1, x1 ]  ])
+
+    gder = shpder@jacoinv
+    
+    return Jaco(jdet=jdet,jaco=jaco,gder=gder)
+
 
 
 def jaco3d():
