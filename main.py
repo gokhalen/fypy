@@ -5,7 +5,7 @@ Created on Fri Jul 17 19:31:21 2020
 @author: Nachiket Gokhale
 """
 
-import sys,time
+import sys
 import cProfile
 import argparse
 

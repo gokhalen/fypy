@@ -61,9 +61,9 @@ class KKRhsRaw():
     class on similar lines to KKRhs but it works with the raw data, rather than SciPy matrices
     '''
     def __init__(self):
-        self.kdata = np.asarray([0])
-        self.krow  = np.asarray([0])
-        self.kcol  = np.asarray([0])
+        self.kdata   = np.asarray([0])
+        self.krow    = np.asarray([0])
+        self.kcol    = np.asarray([0])
         
         self.rhsdata = np.asarray([0])
         self.rhsrow  = np.asarray([0])
@@ -71,15 +71,90 @@ class KKRhsRaw():
 
     def __add__(self,obj):
         out = KKRhsRaw()
-        out.kdata = np.concatenate([self.kdata,obj.kdata])
-        out.krow  = np.concatenate([self.krow,obj.krow])
-        out.kcol  = np.concatenate([self.kcol,obj.kcol])
+        out.kdata   = np.concatenate([self.kdata,obj.kdata])
+        out.krow    = np.concatenate([self.krow,obj.krow])
+        out.kcol    = np.concatenate([self.kcol,obj.kcol])
         
         out.rhsdata = np.concatenate([self.rhsdata,obj.rhsdata])
         out.rhsrow  = np.concatenate([self.rhsrow,obj.rhsrow])
         out.rhscol  = np.concatenate([self.rhscol,obj.rhscol])
         
         return out
+
+class KKRhsRawList():
+    '''
+    class on similar lines to KKRhs but it works with the raw data, rather than SciPy matrices
+    '''
+    def __init__(self):
+        self._kdata   = [0]
+        self._krow    = [0]
+        self._kcol    = [0]
+        
+        self._rhsdata = [0]
+        self._rhsrow  = [0]
+        self._rhscol  = [0]
+
+    def __add__(self,obj):
+        self._kdata.extend(obj.kdata)
+        self._krow.extend(obj.krow)
+        self._kcol.extend(obj.kcol)
+        
+        self._rhsdata.extend(obj.rhsdata)
+        self._rhsrow.extend(obj.rhsrow)
+        self._rhscol.extend(obj.rhscol)
+        
+        return self
+
+    # can create these properties programmatically
+    # e.g. a function that returns a property object
+    @property
+    def kdata(self):
+        return self._kdata
+
+    @kdata.setter
+    def kdata(self,xx):
+        self._kdata = list(xx)
+
+    @property
+    def krow(self):
+        return self._krow
+
+    @krow.setter
+    def krow(self,xx):
+        self._krow = list(xx)
+
+    @property
+    def kcol(self):
+        return self._kcol
+
+    @kcol.setter
+    def kcol(self,xx):
+        self._kcol = list(xx)
+
+    @property
+    def rhsdata(self):
+        return self._rhsdata
+
+    @rhsdata.setter
+    def rhsdata(self,xx):
+        self._rhsdata = list(xx)
+
+    @property
+    def rhsrow(self):
+        return self._rhsrow
+
+    @rhsrow.setter
+    def rhsrow(self,xx):
+        self._rhsrow = list(xx)
+
+    @property
+    def rhscol(self):
+        return self._rhscol
+
+    @rhscol.setter
+    def rhscol(self,xx):
+        self._rhscol = list(xx)
+    
 
 def mapelem(tt):
     # elem = getelem(tt.eltype,tt.ninteg,tt.gdofn)
@@ -88,7 +163,7 @@ def mapelem(tt):
                  dirich=tt.dirich, trac=tt.trac, ideqn=tt.ideqn                 )
     elem.compute()
 
-    kkrhs_e  = KKRhsRaw()
+    kkrhs_e  = KKRhsRawList()
     
     kkrhs_e.kdata = elem.kdata
     kkrhs_e.krow  = elem.krow

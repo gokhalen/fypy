@@ -8,6 +8,10 @@ from scipy import sparse
 from .assutils import *
 from typing import Union,Tuple
 
+# NOTE: The List Based Assembly (KKRhsRawList) is slightly slower for 4 processes
+#       than KKRhsRaw using async assembly (2.2 secs vs 1.5 secs)
+# I think there is loading time being wasted. This can possibly be cut down
+# by initializing a FyPy object and using it repeatedly.
 
 ss         = sparse.coo_matrix
 TOUTASS    = Tuple[ss,ss]
@@ -21,7 +25,6 @@ def assembly_poolmap(fypymesh:FyPyMesh,nprocs:int,chunksize:int)->TOUTASS:
     # data = (0.0,); row = (0,); col = (0,); tt = (data,(row,col))
     # kk  = sparse.coo_matrix(tt,shape=(gdofn,gdofn),dtype='float64');
     # rhs = sparse.coo_matrix(tt,shape=(gdofn,1),dtype='float64');
-
 
     itr_elem = iter(FyPyMeshItr(fypymesh,0,fypymesh.nelem))
 
