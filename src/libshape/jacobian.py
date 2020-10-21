@@ -2,6 +2,7 @@ import numpy as np
 from typing import List,Tuple,Iterable
 from collections import namedtuple
 
+
 zerotol = 1e-12
 
 # points are ALWAYS three dimensional
@@ -75,6 +76,7 @@ def jaco2d(pp:Iterable,shpder)->Jaco:
     gder    = shpder@jacoinv
     
     return Jaco(jdet=jdet,jaco=jaco,gder=gder)
+
 
 def jaco3d():
     pass
