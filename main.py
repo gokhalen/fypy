@@ -20,45 +20,47 @@ from src.libio     import *
 
 if __name__ == '__main__':
 
-    args=getargs()
-    
-    ttotal = Timer('FyPy Total timer',verbose=0)
-    with ttotal:
-        welcome()
-        print(f'Solving using {args.solvertype}')
-                
+    for i in range(1):
 
-        tpre = Timer('Preprocessing timer',verbose=0)
-        with tpre:
-            fypymesh = FyPyMesh();
-            fypymesh.json_read(args.inputfile)
+        args=getargs()
 
-        # create stiffness matrix and rhs
-        tassem = Timer(label='FyPy Assembly timer',verbose=0)
-        with tassem:
-            fassem = eval(f'assembly_{args.partype}')
-            print(f'{args.partype} assembly started...'.capitalize())
-            if ( args.profile == 'True'):
-                cProfile.run('kk,rhs,reduction_time = fassem(fypymesh,args.nprocs,args.chunksize)')
-            else:
-                kk,rhs,reduction_time = fassem(fypymesh,args.nprocs,args.chunksize)
-                
-        tsolve = Timer('FyPy: Solver timer',verbose=0)
-        with tsolve:
-            solver    = FyPySolver(kk,rhs);
-            solution  = solver.solve(args.solvertype)
+        ttotal = Timer('FyPy Total timer',verbose=0)
+        with ttotal:
+            welcome()
+            print(f'Solving using {args.solvertype}')
 
-        tout = Timer('Output timer',verbose=0)
-        with tout:
-            fypymesh.make_solution_from_rhs(solution)
-            fypymesh.make_output(args.outputfile)
 
-    printtime(tpre=tpre.elapsed,tassem=tassem.elapsed,tsolve=tsolve.elapsed,
-              tout=tout.elapsed,ttotal=ttotal.elapsed,treduc=reduction_time,
-              digits=3)
+            tpre = Timer('Preprocessing timer',verbose=0)
+            with tpre:
+                fypymesh = FyPyMesh();
+                fypymesh.json_read(args.inputfile)
 
-    
-    goodbye()
+            # create stiffness matrix and rhs
+            tassem = Timer(label='FyPy Assembly timer',verbose=0)
+            with tassem:
+                fassem = eval(f'assembly_{args.partype}')
+                print(f'{args.partype} assembly started...'.capitalize())
+                if ( args.profile == 'True'):
+                    cProfile.run('kk,rhs,reduction_time = fassem(fypymesh,args.nprocs,args.chunksize)')
+                else:
+                    kk,rhs,reduction_time = fassem(fypymesh,args.nprocs,args.chunksize)
+
+            tsolve = Timer('FyPy: Solver timer',verbose=0)
+            with tsolve:
+                solver    = FyPySolver(kk,rhs);
+                solution  = solver.solve(args.solvertype)
+
+            tout = Timer('Output timer',verbose=0)
+            with tout:
+                fypymesh.make_solution_from_rhs(solution)
+                fypymesh.make_output(args.outputfile)
+
+        printtime(tpre=tpre.elapsed,tassem=tassem.elapsed,tsolve=tsolve.elapsed,
+                  tout=tout.elapsed,ttotal=ttotal.elapsed,treduc=reduction_time,
+                  digits=3)
+
+            
+        goodbye()
 
 
     

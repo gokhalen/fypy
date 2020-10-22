@@ -9,9 +9,15 @@ from .assutils import *
 from typing import Union,Tuple
 
 # NOTE: The List Based Assembly (KKRhsRawList) is slightly slower for 4 processes
-#       than KKRhsRaw using async assembly (2.2 secs vs 1.5 secs)
+#       than KKRhsRaw using async assembly (2.2 secs vs 1.5 secs) for 64x64 problem
+#       a 128x128 problem is only 1.5 times faster using 4 procs (list assembly)
+#       over a serial problem (list)
 # I think there is loading time being wasted. This can possibly be cut down
 # by initializing a FyPy object and using it repeatedly.
+
+# speed up for Assembly is possibly slow, most likely, due to the sum(map()) paradigm
+# I think it is the operator overloading that makes it slow
+# better solution is to use list assembly on each process and return lists
 
 ss         = sparse.coo_matrix
 TOUTASS    = Tuple[ss,ss]
@@ -30,10 +36,10 @@ def assembly_poolmap(fypymesh:FyPyMesh,nprocs:int,chunksize:int)->TOUTASS:
 
     # global,assembled kkrhs, hence the g
     # kkrhs_g    = KKRhs(fypymesh.gdofn)
-    kkrhs_g    = KKRhsRaw()
+    kkrhs_g    = KKRhsRawList()
     # initializer for sum
     # kkrhs_zero = KKRhs(fypymesh.gdofn)
-    kkrhs_zero = KKRhsRaw()
+    kkrhs_zero = KKRhsRawList()
 
     # imap with chunksize=1 seems to give best performance
     with mp.Pool(processes=nprocs) as pool:
@@ -61,12 +67,12 @@ def assembly_async(fypymesh:FyPyMesh,nprocs:int,chunksize:int)->TOUTASS:
     maplist   = [ map(mapelem,itrlist[i])                           for i in range(nprocs)]
     
     with mp.Pool(processes=nprocs) as pool:
-        asynclist = [pool.apply_async(sum,(maplist[i],KKRhsRaw() )) for i in range(nprocs)]
+        asynclist = [pool.apply_async(sum,(maplist[i],KKRhsRawList() )) for i in range(nprocs)]
         reslist   = [res.get(timeout=None) for res in asynclist]
 
     treduc = Timer('FyPy Reduction Time',verbose=0)
     with treduc:
-        kkrhs_g=sum(reslist,KKRhsRaw())
+        kkrhs_g=sum(reslist,KKRhsRawList())
         tt  = (kkrhs_g.kdata,(kkrhs_g.krow,kkrhs_g.kcol))
         kk  = sparse.coo_matrix(tt,shape=(gdofn,gdofn),dtype='float64');
 

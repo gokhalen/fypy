@@ -29,6 +29,7 @@ if __name__ == '__main__':
         tout = Timer('Output timer',verbose=0)
         with tout:
             fypy.output()
+            fypy.postprocess('0')
             
 
     printtime(tpre=tpre.elapsed,tassem=tassem.elapsed,tsolve=tsolve.elapsed,

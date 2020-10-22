@@ -1,4 +1,4 @@
-#fypy mesh generator
+# fypy mesh generator
 nelem=110 nelemx=10 nelemy=10 nnodes=121 ninteg=3 ndofn=2 nprop=2 ndime=1 gdofn=230
 $coord
 1 0.0 0.0 0.0 

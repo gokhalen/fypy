@@ -7,7 +7,7 @@ def getargs():
     parser.add_argument('--inputfile',help='input json file',required=False,type=str,default='data.json.in')
     parser.add_argument('--outputfile',help='output json file',required=False,type=str,default='data.json.out')
     parser.add_argument('--partype',help='parallelization type: serial poolmap or async',required=False,
-                        type=str,default='serial',choices=['serial','poolmap','async','list'])
+                        type=str,default='list',choices=['serial','poolmap','async','list'])
     solverlist = ['spsolve','bicg','bicgstab','cg','cgs','gmres','lgmres','minres','qmr','gcrotmk']
     solverstr  = str(solverlist)
     parser.add_argument('--solvertype',help=f'choose from: {solverstr}',required=False,type=str,default='spsolve',choices=solverlist)

@@ -1,13 +1,23 @@
 # A quick and dirty 1d,2d-mesh generator
 import sys,json;
 import numpy as np;
-from collections import namedtuple
+import matplotlib.pyplot as plt
+import matplotlib as mpl
 
 class FyPyMesh():
     stflist = ['homogeneous','inclusion']
     
-    def __init__(self):
-        pass
+    def __init__(self,inputdir='',outputdir=''):
+        if ( inputdir != '') and ( inputdir[-1] != '/'):
+            print('input directory requires a trailing /')
+            sys.exit()
+
+        if ( outputdir != '') and ( outputdir[-1] != '/'):
+            print('output directory requires a trailing /')
+            sys.exit()
+            
+        self.inputdir  = inputdir
+        self.outputdir = outputdir
     
     def make_eqn_no(self,ideqn):
         # must be called after all negative numbers are set
@@ -27,6 +37,7 @@ class FyPyMesh():
         self.nelem    = nelem
         self.nelemx   = nelem
         self.nelemy   = 0
+        self.nnodex   = nelem+1
         self.stf      = stf
         self.stfmin   = 1
         self.stfmax   = 5
@@ -96,6 +107,8 @@ class FyPyMesh():
         self.nelem    = nelemx*nelemy
         self.nelemx   = nelemx
         self.nelemy   = nelemy
+        self.nnodex   = nelemx+1
+        self.nnodey   = nelemy+1
         if ( bctype == 'trac'): self.nelem += nelemx  # if traction elements, increase nlelem
         self.nnodes   = nnodex*nnodey
         self.ninteg   = 3
@@ -227,6 +240,8 @@ class FyPyMesh():
         dd = { 'nelem':self.nelem,
                'nelemx':self.nelemx,
                'nelemy':self.nelemy,
+               'nnodex':self.nnodex,
+               'nnodey':self.nnodey,
                'nnodes':self.nnodes,
                'ninteg':self.ninteg,
                'ndofn':self.ndofn,
@@ -242,11 +257,12 @@ class FyPyMesh():
                'trac':self.trac,
                'pforce':self.pforce
              }
-        with open(filename,'w') as fout:
+
+        with open(self.outputdir+filename,'w') as fout:
             json.dump(dd,fout,indent=4)
 
     def json_read(self,filename='data.json'):
-        with open(filename,'r') as fin:
+        with open(self.inputdir+filename,'r') as fin:
             jj=json.load(fin)
 
         # recreate mesh data structure
@@ -270,13 +286,39 @@ class FyPyMesh():
         
         sollist = [ list(ss) for ss in self.solution]
         dd = {'solution':sollist}
-        
-        with open(outfile,'w') as fout:
+
+        with open(self.outputdir+outfile,'w') as fout:
             json.dump(dd,fout,indent=4)
 
     def make_sparsity(self):
         # row, col
         pass
+
+    def postprocess(self,suffix):
+        xx = np.asarray(self.coord)[:,0].reshape(self.nnodex,self.nnodey)
+        yy = np.asarray(self.coord)[:,1].reshape(self.nnodex,self.nnodey)
+
+        ux = self.solution[:,0].reshape(self.nnodex,self.nnodey)
+        uy = self.solution[:,1].reshape(self.nnodex,self.nnodey)
+
+        lam = np.asarray(self.prop)[:,0].reshape(self.nnodex,self.nnodey)
+        mu  = np.asarray(self.prop)[:,1].reshape(self.nnodex,self.nnodey)
+
+        umin   = np.min([ux,uy])  ; umax   = np.max([ux,uy])
+        stfmin = np.min([lam,mu]) ; stfmax = np.min([lam,mu])  
+
+        self.plotfield(xx,yy,lam,'lambda',stfmin,stfmax,suffix)
+        self.plotfield(xx,yy,mu, 'mu',stfmin,stfmax,suffix)
+        self.plotfield(xx,yy,ux, 'ux',stfmin,stfmax,suffix)
+        self.plotfield(xx,yy,uy, 'uy',stfmin,stfmax,suffix)
+        
+    def plotfield(self,xx,yy,field,fieldname,fmin,fmax,suffix):
+        plt.figure(fieldname)
+        plt.pcolormesh(xx,yy,field,vmin=fmin,vmax=fmax)
+        plt.title(fieldname)
+        ax = plt.gca()
+        ax.set_aspect('equal')
+        plt.savefig(self.outputdir+fieldname+f'{suffix}.png')
     
 
 
