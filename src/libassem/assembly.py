@@ -34,8 +34,13 @@ def assembly_serial(fypymesh:FyPyMesh,dummy1,dummy2)->TOUTASS:
     treduc         = Timer('FyPy Assembly (Reduction) Timer',verbose=0)
 
     eldict ={}
+
     
     for ielem in range(1,fypymesh.nelem+1):
+
+        if ( ielem > 4096):
+            breakpoint()
+            pass
         eltype = fypymesh.conn[ielem-1][-1]
         gdofn  = fypymesh.gdofn
         # elem   = getelem(eltype,ninteg,gdofn)

@@ -1,6 +1,6 @@
 import scipy.sparse.linalg
 import numpy as np
-import copy
+import sys
 
 from timerit import Timer
 from scipy import sparse

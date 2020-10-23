@@ -102,7 +102,7 @@ class FyPyMesh():
         ystart  = 0.0; yend = ystart + breadth; dy = breadth / nelemy
 
         nnodex  = nelemx + 1;
-        nnodey = nelemy + 1
+        nnodey  = nelemy + 1
         
         # data needed for write_mesh
         self.nelem    = nelemx*nelemy
@@ -169,7 +169,7 @@ class FyPyMesh():
                 n2  = n1 + nnodey
                 n3  = n2 + 1
                 n4  = n1 + 1
-                self.conn.append([n1,n2,n3,n4,'linelas2d'])
+                self.conn.append([n1,n2,n3,n4,'linelas2dnumba'])
 
         # add traction elements if necessary
         if ( bctype == 'trac' ):
@@ -356,6 +356,10 @@ class FyPyMesh():
         ax = plt.gca()
         ax.set_aspect('equal')
         plt.savefig(self.outputdir+fieldname+f'{suffix}.png')
+        # without this close figure instances 'stay alive'
+        # and multiple colorbars are drawn
+        # putting plt.close() in init doesn't seem to work
+        plt.close()  
     
 
 

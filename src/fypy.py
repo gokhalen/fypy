@@ -9,7 +9,6 @@ class FyPy():
         self.fypymesh = FyPyMesh(args.inputdir,args.outputdir)
         self.fypymesh.json_read(self.args.inputfile)
 
-
     def assembly(self):
         fassem = eval(f'assembly_{self.args.partype}')
         if ( self.args.profile == 'True'):

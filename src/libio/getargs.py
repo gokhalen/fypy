@@ -4,7 +4,7 @@ def getargs():
     parser = argparse.ArgumentParser(description='FyPy: A finite element code written in Python')
     parser.add_argument('--nprocs',help='number of processes to use',required=False,type=int,default=1)
     parser.add_argument('--partype',help='parallelization type: serial poolmap or async',required=False,
-                            type=str,default='list',choices=['serial','poolmap','async','list'])
+                            type=str,default='list',choices=['serial','poolmap','async','list','parlist'])
 
     
     parser.add_argument('--chunksize', help='chunksize to use',required=False,type=int,default=1)
