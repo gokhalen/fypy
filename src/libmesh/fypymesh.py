@@ -3,9 +3,10 @@ import sys,json;
 import numpy as np;
 import matplotlib.pyplot as plt
 import matplotlib as mpl
+import random
 
 class FyPyMesh():
-    stflist = ['homogeneous','inclusion']
+    stflist = ['homogeneous','inclusion','random']
     
     def __init__(self,inputdir='',outputdir=''):
         if ( inputdir != '') and ( inputdir[-1] != '/'):
@@ -93,7 +94,7 @@ class FyPyMesh():
         if self.stf == 'inclusion':
             self.prop = [ [self.stfmax] if ( (x >=0.4*self.length) and (x <= 0.6*self.length)) else [self.stfmin] for x in coordx ]
 
-    def create_mesh_2d(self,length=10.0,breadth=10.0,nelemx=10,nelemy=10,stf='homogeneous',bctype='dirich'):
+    def create_mesh_2d(self,length=10.0,breadth=10.0,nelemx=10,nelemy=10,stf='homogeneous',bctype='dirich',ninc=1,rmin=0.05,rmax=0.15):
         assert (length > 0),'length has to be greater than 0'
         assert (breadth > 0),'breadth has to be greater than 0'
         
@@ -109,6 +110,8 @@ class FyPyMesh():
         self.nelemy   = nelemy
         self.nnodex   = nelemx+1
         self.nnodey   = nelemy+1
+        self.length   = length
+        self.breadth  = breadth
         if ( bctype == 'trac'): self.nelem += nelemx  # if traction elements, increase nlelem
         self.nnodes   = nnodex*nnodey
         self.ninteg   = 3
@@ -119,6 +122,24 @@ class FyPyMesh():
         # parameters 
         self.stfmin   = 1
         self.stfmax   = 5
+        self.ninc     = 1
+        self.centers  = [] # list of centers for inclusions
+        self.radii    = [] # list of radii   for inclusions
+        self.rmin     = rmin
+        self.rmax     = rmax
+
+        # create centers for inclusions
+        # we want the inclusions roughly in the center
+        for iinc in range(self.ninc):
+            xmid = xstart + (self.length/2.0)
+            ymid = ystart + (self.breadth/2.0)
+            xcen = xmid + (random.random()-0.5)*(self.length/2.5)
+            ycen = ymid + (random.random()-0.5)*(self.breadth/2.5)
+            # reference length 
+            refl = np.min([length,breadth])
+            rrad = (self.rmin + random.random()*(self.rmax-self.rmin))*refl  # a random number between rmin and rmax times reference length
+            self.centers.append([xcen,ycen])
+            self.radii.append(rrad)
 
         qdirich = -1
         qtrac   = -0.6
@@ -162,15 +183,29 @@ class FyPyMesh():
                 n2 += nnodey
 
         # create properties
-        self.prop   = []; xmid = length/2.0; ymid = breadth/2.0; rad = length*0.2
+        self.prop   = []; xmid = length/2.0; ymid = breadth/2.0; 
         for x,y,z in self.coord:
-            dist = (x-xmid)**2 + (y-ymid)**2
-            dist = dist**0.5
-            mu = self.stfmin; lam = 2.0*self.stfmin;
-            
-            if ( stf=='inclusion' and ( dist < rad ) ):
-                mu = self.stfmax; lam =2.0*self.stfmax
 
+            if ( stf=='homogeneous'):
+                mu = self.stfmin ; lam = 2.0*mu
+           
+            if ( stf=='inclusion'):
+                dist = (x-xmid)**2 + (y-ymid)**2
+                dist = dist**0.5
+                rad  = length*0.2
+                mu   = self.stfmax; lam =2.0*mu
+                if ( dist <= rad ):
+                    mu = 5.0*self.stfmin; lam = 2.0*mu;
+
+
+            if ( stf=='random'):
+                for [xcen,ycen],rad in zip(self.centers,self.radii):
+                    dist = (x-xcen)**2.0 + (y-ycen)**2.0
+                    dist = dist**0.5
+                    mu   = self.stfmin; lam =2.0*mu
+                    if ( dist <= rad):
+                        mu = 5.0*self.stfmin; lam = 2.0*mu;
+                        
             self.prop.append([lam,mu])
 
         # create ideqn and dirichlet bc
@@ -304,18 +339,20 @@ class FyPyMesh():
         lam = np.asarray(self.prop)[:,0].reshape(self.nnodex,self.nnodey)
         mu  = np.asarray(self.prop)[:,1].reshape(self.nnodex,self.nnodey)
 
-        umin   = np.min([ux,uy])  ; umax   = np.max([ux,uy])
-        stfmin = np.min([lam,mu]) ; stfmax = np.min([lam,mu])  
+        uxmin  = np.min(ux)  ;      uxmax  = np.max(ux)
+        uymin  = np.min(uy)  ;      uymax  = np.max(uy)   
+        stfmin = np.min([lam,mu]) ; stfmax = np.max([lam,mu])  
 
         self.plotfield(xx,yy,lam,'lambda',stfmin,stfmax,suffix)
         self.plotfield(xx,yy,mu, 'mu',stfmin,stfmax,suffix)
-        self.plotfield(xx,yy,ux, 'ux',stfmin,stfmax,suffix)
-        self.plotfield(xx,yy,uy, 'uy',stfmin,stfmax,suffix)
+        self.plotfield(xx,yy,ux, 'ux',uxmin,uxmax,suffix)
+        self.plotfield(xx,yy,uy, 'uy',uymin,uymax,suffix)
         
     def plotfield(self,xx,yy,field,fieldname,fmin,fmax,suffix):
         plt.figure(fieldname)
         plt.pcolormesh(xx,yy,field,vmin=fmin,vmax=fmax)
         plt.title(fieldname)
+        plt.colorbar()
         ax = plt.gca()
         ax.set_aspect('equal')
         plt.savefig(self.outputdir+fieldname+f'{suffix}.png')
