@@ -94,7 +94,15 @@ class FyPyMesh():
         if self.stf == 'inclusion':
             self.prop = [ [self.stfmax] if ( (x >=0.4*self.length) and (x <= 0.6*self.length)) else [self.stfmin] for x in coordx ]
 
-    def create_mesh_2d(self,length=10.0,breadth=10.0,nelemx=10,nelemy=10,stf='homogeneous',bctype='dirich',ninc=1,rmin=0.05,rmax=0.15):
+    def create_mesh_2d(self,length=10.0,breadth=10.0,nelemx=10,nelemy=10,
+                       stf='homogeneous',bctype='dirich',ninc=1,rmin=0.05,rmax=0.15,
+                       radius = 1.0,
+                       xcen   = 5.0,
+                       ycen   = 5.0,
+                       stfmin = 1.0,
+                       stfmax = 5.0,
+                       nu     = 0.25,
+                       nclassx=3,nclassy=3):
         assert (length > 0),'length has to be greater than 0'
         assert (breadth > 0),'breadth has to be greater than 0'
         
@@ -118,15 +126,20 @@ class FyPyMesh():
         self.ndofn    = 2
         self.nprop    = 2
         self.ndime    = 1
-        
-        # parameters 
-        self.stfmin   = 1
-        self.stfmax   = 5
+        self.stfmin   = stfmin
+        self.stfmax   = stfmax
+        self.rnu      = 2*nu/(1-2*nu)
         self.ninc     = 1
         self.centers  = [] # list of centers for inclusions
         self.radii    = [] # list of radii   for inclusions
         self.rmin     = rmin
         self.rmax     = rmax
+        self.radius   = radius
+        self.xcen     = xcen
+        self.ycen     = ycen
+        self.nclassx  = nclassx
+        self.nclassy  = nclassy
+        self.nclass   = nclassx*nclassy + 1
 
         # create centers for inclusions
         # we want the inclusions roughly in the center
@@ -187,27 +200,25 @@ class FyPyMesh():
         for x,y,z in self.coord:
 
             if ( stf=='homogeneous'):
-                mu = self.stfmin ; lam = 2.0*mu
+                mu = self.stfmin ; lam = self.rnu*mu
            
             if ( stf=='inclusion'):
-                dist = (x-xmid)**2 + (y-ymid)**2
+                dist = (x-self.xcen)**2 + (y-self.ycen)**2
                 dist = dist**0.5
                 rad  = length*0.2
-                mu   = self.stfmax; lam =2.0*mu
+                mu   = self.stfmin; lam =self.rnu*mu
                 if ( dist <= rad ):
-                    mu = 5.0*self.stfmin; lam = 2.0*mu;
-
+                    mu = 5.0*self.stfmin; lam = self.rnu*mu;
 
             if ( stf=='random'):
                 for [xcen,ycen],rad in zip(self.centers,self.radii):
                     dist = (x-xcen)**2.0 + (y-ycen)**2.0
                     dist = dist**0.5
-                    mu   = self.stfmin; lam =2.0*mu
+                    mu   = self.stfmin; lam = self.rnu*mu
                     if ( dist <= rad):
-                        mu = 5.0*self.stfmin; lam = 2.0*mu;
+                        mu = 5.0*self.stfmin; lam = self.rnu*mu;
                         
             self.prop.append([lam,mu])
-
         # create ideqn and dirichlet bc
         self.ideqn  = [ [0]*self.ndofn for i in self.coord]
         self.dirich = [ [0]*self.ndofn for i in self.coord]
@@ -229,8 +240,6 @@ class FyPyMesh():
 
         # must be called after all negative numbers are set
         self.make_eqn_no(self.ideqn)
-
-
         
         self.bf   = [ [0]*self.ndofn for i in self.coord ]
         self.pforce   = [ [0]*self.ndofn for i in self.coord ]
@@ -240,6 +249,9 @@ class FyPyMesh():
             for i in range(nnodey,self.nnodes+1,nnodey):
                 self.trac[i-1][1] = qtrac
 
+        # dump out mu and lambda 
+
+    # not supported any more - json dumps are more elegant
     def write_field(self,field_name,data,fout):
         fout.write('$'+field_name+'\n')
         for idx,dd in enumerate(data):
@@ -249,6 +261,7 @@ class FyPyMesh():
             fout.write('\n')
         fout.write('$'+field_name+'\n')
 
+    # not supported anymore - json dumps are more elegant
     def write_mesh(self,filename='data.in'):
         # this code should be independent of dimension
         with open(filename,'w') as fout:
@@ -329,26 +342,28 @@ class FyPyMesh():
         # row, col
         pass
 
-    def postprocess(self,suffix):
-        xx = np.asarray(self.coord)[:,0].reshape(self.nnodex,self.nnodey)
-        yy = np.asarray(self.coord)[:,1].reshape(self.nnodex,self.nnodey)
-
-        ux = self.solution[:,0].reshape(self.nnodex,self.nnodey)
-        uy = self.solution[:,1].reshape(self.nnodex,self.nnodey)
-
-        lam = np.asarray(self.prop)[:,0].reshape(self.nnodex,self.nnodey)
-        mu  = np.asarray(self.prop)[:,1].reshape(self.nnodex,self.nnodey)
-
-        uxmin  = np.min(ux)  ;      uxmax  = np.max(ux)
-        uymin  = np.min(uy)  ;      uymax  = np.max(uy)   
-        stfmin = np.min([lam,mu]) ; stfmax = np.max([lam,mu])  
-
-        self.plotfield(xx,yy,lam,'lambda',stfmin,stfmax,suffix)
-        self.plotfield(xx,yy,mu, 'mu',stfmin,stfmax,suffix)
-        self.plotfield(xx,yy,ux, 'ux',uxmin,uxmax,suffix)
-        self.plotfield(xx,yy,uy, 'uy',uymin,uymax,suffix)
+    def preprocess(self,suffix):
+        lam    = np.asarray(self.prop)[:,0]
+        mu     = np.asarray(self.prop)[:,1]
+        stfmin = np.min([lam,mu]) ; stfmax = np.max([lam,mu])
         
-    def plotfield(self,xx,yy,field,fieldname,fmin,fmax,suffix):
+        self.plotfield(self.coord, lam,    'lambda', stfmin, stfmax, suffix=suffix)
+        self.plotfield(self.coord, mu,        'mu' , stfmin, stfmax, suffix=suffix)
+
+    def postprocess(self,suffix):
+        
+        ux  = np.asarray(self.solution)[:,0]
+        uy  = np.asarray(self.solution)[:,1]
+  
+        self.plotfield(self.coord, ux,         'ux', suffix=suffix)
+        self.plotfield(self.coord, uy,         'uy', suffix=suffix)
+        
+    def plotfield(self,coord,field,fieldname,fmin=None,fmax=None,suffix=''):
+        
+        xx    = np.asarray(coord)[:,0].reshape(self.nnodex,self.nnodey)
+        yy    = np.asarray(coord)[:,1].reshape(self.nnodex,self.nnodey)
+        field = field.reshape(self.nnodex,self.nnodey) 
+
         plt.figure(fieldname)
         plt.pcolormesh(xx,yy,field,vmin=fmin,vmax=fmax)
         plt.title(fieldname)

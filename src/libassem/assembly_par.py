@@ -1,12 +1,14 @@
 import scipy.sparse.linalg
 import numpy as np
 import multiprocessing as mp
-from timerit import Timer
 
+
+from timerit import Timer
 from ..libmesh import *
 from scipy import sparse
 from .assutils import *
 from typing import Union,Tuple
+
 
 # NOTE: The List Based Assembly (KKRhsRawList) is slightly slower for 4 processes
 #       than KKRhsRaw using async assembly (2.2 secs vs 1.5 secs) for 64x64 problem
@@ -113,12 +115,6 @@ def assembly_parlist(fypymesh,nprocs,chunksize):
         karr.extend(tt[0]);     krow.extend(tt[1]);     kcol.extend(tt[2])   
         rhsarr.extend(tt[3]);   rhsrow.extend(tt[4]);   rhscol.extend(tt[5]);
         
-    #for ist,ien in zip(startelemlist,endelemlist):
-    #    tt = parlistworker(fypymesh,ist,ien)
-    #    
-    #    karr.extend(tt[0]);     krow.extend(tt[1]);     kcol.extend(tt[2])
-    #    rhsarr.extend(tt[3]);   rhsrow.extend(tt[4]);   rhscol.extend(tt[5]);
-
     kk   = sparse.coo_matrix((karr,(krow,kcol)),shape=(gdofn,gdofn),dtype='float64');
     rhs  = sparse.coo_matrix((rhsarr,(rhsrow,rhscol)),shape=(gdofn,1),dtype='float64');
 

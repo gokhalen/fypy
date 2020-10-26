@@ -4,8 +4,6 @@ from scipy import sparse
 from ..libinteg import *
 from ..libshape import *
 
-
-
 class ElemBase():
 
     # MAKE slots disallow adding new variables

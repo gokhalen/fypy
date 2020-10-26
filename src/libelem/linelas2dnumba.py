@@ -27,5 +27,5 @@ class LinElas2DNumba(LinElas2D):
         self.estiff = kk
 
 
-    
+        
     

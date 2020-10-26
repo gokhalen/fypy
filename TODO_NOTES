@@ -1,10 +1,7 @@
-  0) Check if reusing a class eliminates loading time
-  2) Compare solution times for 128x128 problem
+  0) Numba RHS
  10) Put the numbaized stiffness kernel as a staticmethod in the numba class
-
- 11) Parallel assembly via lists
- 110) Make ninteg a element property
- 
+110) Make ninteg a element property
+111) Selective Reduced Integration 
 
  
 
