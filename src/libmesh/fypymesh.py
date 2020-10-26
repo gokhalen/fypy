@@ -1,5 +1,5 @@
 # A quick and dirty 1d,2d-mesh generator
-import sys,json;
+import os,sys,json;
 import numpy as np;
 import matplotlib.pyplot as plt
 import matplotlib as mpl
@@ -306,9 +306,10 @@ class FyPyMesh():
                'pforce':self.pforce
              }
 
-        with open(self.outputdir+filename,'w') as fout:
+        with open(self.outputdir+filename,'x') as fout:
             json.dump(dd,fout,indent=4)
 
+    # used to read the mesh into the FEM code
     def json_read(self,filename='data.json'):
         with open(self.inputdir+filename,'r') as fin:
             jj=json.load(fin)
