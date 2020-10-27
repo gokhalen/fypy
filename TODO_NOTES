@@ -1,7 +1,8 @@
   0) Numba RHS
  10) Put the numbaized stiffness kernel as a staticmethod in the numba class
 110) Make ninteg a element property
-111) Selective Reduced Integration 
+111) Selective Reduced Integration
+112) Instead of defining integration rule purely by dimension (1d,2d,3d), define it using a string.
 
  
 

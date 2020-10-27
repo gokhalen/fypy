@@ -205,7 +205,7 @@ class FyPyMesh():
             if ( stf=='inclusion'):
                 dist = (x-self.xcen)**2 + (y-self.ycen)**2
                 dist = dist**0.5
-                rad  = length*0.2
+                rad  = self.radius
                 mu   = self.stfmin; lam =self.rnu*mu
                 if ( dist <= rad ):
                     mu = 5.0*self.stfmin; lam = self.rnu*mu;
