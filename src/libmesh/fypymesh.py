@@ -111,6 +111,8 @@ class FyPyMesh():
 
         nnodex  = nelemx + 1;
         nnodey  = nelemy + 1
+
+        
         
         # data needed for write_mesh
         self.nelem    = nelemx*nelemy
