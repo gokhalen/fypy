@@ -84,6 +84,7 @@ def jaco2dpy(pp:Iterable,shpder)->Jaco:
 def jaco2dnumba(pp:Iterable,shpder)->Jaco:
     pass
 
+# nb.float[:,::1] The ::1 declares the 2d array to be c-contiguous
 @nb.njit((nb.float64[:,::1],nb.float64[:,::1]),fastmath=True)
 def jaco2d(pp:Iterable,shpder)->Jaco:
     xvec = pp[:,0]
