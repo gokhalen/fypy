@@ -1,7 +1,5 @@
   7) sanity checks on xcen,ycen and radius (check if less than grid spacing)
   8) check stftype in fypymesh
-  9) matplotlib for a general quadmesh 
-  https://stackoverflow.com/questions/52202014/how-can-i-plot-2d-fem-results-using-matplotlib
  19) Numba RHS
  20) Put the numbaized stiffness kernel as a staticmethod in the numba class
 110) Make ninteg a element property
