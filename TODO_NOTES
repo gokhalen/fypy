@@ -6,7 +6,7 @@
 120) Selective Reduced Integration
 130) Instead of defining integration rule purely by dimension (1d,2d,3d), define it using a string.
 140) Pyvista for visualization install on Ubuntu
-
+150) PyVista support 
  
 
 Notes:

@@ -15,7 +15,8 @@ if __name__ == '__main__':
         tpre = Timer('Preprocessing timer',verbose=0)
         with tpre:
             fypy = FyPy(args)
-
+            fypy.preprocess('0')
+        
         tassem = Timer(label='FyPy Assembly timer',verbose=0)
         with tassem:
             print(f'{args.partype} assembly started...'.capitalize())

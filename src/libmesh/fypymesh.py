@@ -4,6 +4,7 @@ import numpy as np;
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import random
+import pyvista as pv
 
 class FyPyMesh():
     stflist = ['homogeneous','inclusion','random']
@@ -377,7 +378,49 @@ class FyPyMesh():
         # without this close figure instances 'stay alive'
         # and multiple colorbars are drawn
         # putting plt.close() in init doesn't seem to work
-        plt.close()  
+        plt.close()
+
+    def postprocess_pv(self,suffix):
+        # create vertices
+        vertices = np.asarray(self.coord)
+        # create quad faces - check if the element is a quad len(ff)==5
+        # drop the last element because it is a string describing element type
+        faces = [ [4,*ff[:-1]] for ff in self.conn if len(ff)==5 ]
+        faces = np.asarray(faces)
+        faces[:,1:] -=1             # subtract 1 because connectivity is 1 based
+        surf = pv.PolyData(vertices,faces)
+        
+        # create data to plot
+        ux     = np.asarray(self.solution)[:,0]
+        uy     = np.asarray(self.solution)[:,1]
+        lam    = np.asarray(self.prop)[:,0]
+        mu     = np.asarray(self.prop)[:,1]
+        stfmin = np.min([lam,mu]) ; stfmax = np.max([lam,mu])
+        
+        surf.point_arrays['ux']  = ux
+        surf.point_arrays['uy']  = uy
+        surf.point_arrays['lam'] = lam
+        surf.point_arrays['mu']  = mu
+
+        self.plot_pyvista(surf,ux,'ux',clim=None,suffix=suffix);
+        self.plot_pyvista(surf,uy,'uy',clim=None,suffix=suffix);
+        self.plot_pyvista(surf,lam,'lam',clim=None,suffix=suffix);
+        self.plot_pyvista(surf,mu,'mu',clim=None,suffix=suffix);
+
+
+    def plot_pyvista(self,surf,field,fieldname,clim=None,suffix=''):
+        # you can pass min and max range in clim, as in clim=[min,max]
+        surf.point_arrays[fieldname]=field
+        sargs = dict(height=0.25, vertical=True, position_x=0.85, position_y=0.05)
+                
+        p = pv.Plotter()
+        p.show_axes()
+        p.add_mesh(surf,clim=clim,scalars=fieldname,scalar_bar_args=sargs)
+        p.view_xy()
+        p.show(screenshot=self.outputdir+fieldname+'_pyvista.png')
+        p.close()
+
+        
     
 
 

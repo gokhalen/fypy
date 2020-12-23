@@ -25,8 +25,12 @@ class FyPy():
         self.fypymesh.make_solution_from_rhs(self.solution)
         self.fypymesh.make_output(self.args.outputfile)
 
+    def preprocess(self,suffix):
+        self.fypymesh.preprocess(suffix)
+
     def postprocess(self,suffix):
         self.fypymesh.postprocess(suffix)
+        self.fypymesh.postprocess_pv(suffix)
 
 
     def doeverything(self,suffix):
