@@ -2,6 +2,8 @@
     "nelem": 400,
     "nelemx": 20,
     "nelemy": 20,
+    "nnodex": 21,
+    "nnodey": 21,
     "nnodes": 441,
     "ninteg": 3,
     "ndofn": 2,
