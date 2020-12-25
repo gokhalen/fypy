@@ -32,12 +32,12 @@ class FyPy():
         self.fypymesh.postprocess(suffix)
         self.fypymesh.postprocess_pv(suffix)
 
-
     def doeverything(self,suffix):
         self.assembly()
         self.solve()
         self.output()
         self.postprocess(suffix)
+
         
         
     
