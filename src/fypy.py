@@ -30,7 +30,9 @@ class FyPy():
 
     def postprocess(self,suffix):
         self.fypymesh.postprocess(suffix)
-        self.fypymesh.postprocess_pv(suffix)
+        # Causes issue when running inside a script
+        # 'maximum number of clients reachedFatal Python error: Segmentation fault'
+        # self.fypymesh.postprocess_pv(suffix)
 
     def doeverything(self,suffix):
         self.assembly()
