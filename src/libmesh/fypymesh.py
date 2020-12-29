@@ -341,7 +341,7 @@ class FyPyMesh():
         for x,y,z in self.coord:
 
             if ( stftype=='homogeneous'):
-                mu = self.stfmin ; lam = self.rnu*mu
+                mu = self.mumin ; lam = self.rnu*mu
            
             if ( stftype=='inclusion'):
                 for [xcen,ycen],rad in zip(self.centers,self.radii):
