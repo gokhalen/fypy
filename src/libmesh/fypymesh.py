@@ -95,171 +95,14 @@ class FyPyMesh():
         if self.stf == 'inclusion':
             self.prop = [ [self.stfmax] if ( (x >=0.4*self.length) and (x <= 0.6*self.length)) else [self.stfmin] for x in coordx ]
 
-    def create_mesh_2d_old(self,length=10.0,breadth=10.0,nelemx=10,nelemy=10,
-                       stf='homogeneous',bctype='dirich',ninc=1,rmin=0.05,rmax=0.15,
-                       radius = 1.0,
-                       xcen   = 5.0,
-                       ycen   = 5.0,
-                       stfmin = 1.0,
-                       stfmax = 5.0,
-                       nu     = 0.25,
-                       nclassx=3,nclassy=3):
-        assert (length > 0),'length has to be greater than 0'
-        assert (breadth > 0),'breadth has to be greater than 0'
-        
-        xstart  = 0.0; xend = xstart + length ; dx = length  / nelemx 
-        ystart  = 0.0; yend = ystart + breadth; dy = breadth / nelemy
-
-        nnodex  = nelemx + 1;
-        nnodey  = nelemy + 1
-        
-        # data needed for write_mesh
-        self.nelem    = nelemx*nelemy
-        self.nelemx   = nelemx
-        self.nelemy   = nelemy
-        self.nnodex   = nelemx+1
-        self.nnodey   = nelemy+1
-        self.length   = length
-        self.breadth  = breadth
-        if ( bctype == 'trac'): self.nelem += nelemx  # if traction elements, increase nlelem
-        self.nnodes   = nnodex*nnodey
-        self.ninteg   = 3
-        self.ndofn    = 2
-        self.nprop    = 2
-        self.ndime    = 1
-        self.stfmin   = stfmin
-        self.stfmax   = stfmax
-        self.rnu      = 2*nu/(1-2*nu)
-        self.ninc     = 1
-        self.centers  = [] # list of centers for inclusions
-        self.radii    = [] # list of radii   for inclusions
-        self.rmin     = rmin
-        self.rmax     = rmax
-        self.radius   = radius
-        self.xcen     = xcen
-        self.ycen     = ycen
-        self.nclassx  = nclassx
-        self.nclassy  = nclassy
-        self.nclass   = nclassx*nclassy + 1
-
-        # create centers for inclusions
-        # we want the inclusions roughly in the center
-        for iinc in range(self.ninc):
-            xmid = xstart + (self.length/2.0)
-            ymid = ystart + (self.breadth/2.0)
-            xcen = xmid + (random.random()-0.5)*(self.length/2.5)
-            ycen = ymid + (random.random()-0.5)*(self.breadth/2.5)
-            # reference length 
-            refl = np.min([length,breadth])
-            rrad = (self.rmin + random.random()*(self.rmax-self.rmin))*refl  # a random number between rmin and rmax times reference length
-            self.centers.append([xcen,ycen])
-            self.radii.append(rrad)
-
-        qdirich = -1
-        qtrac   = -0.6
-        
-        # node numbers increase by 1 in the y direction by nodey in the x-direction
-        # node numbers are defined implicitly.
-
-        # create coords
-        self.coord=[]
-        xx = xstart; yy =ystart; zz=0.0
-        for ix in range(1,nnodex+1):
-            for iy in range(1,nnodey+1):
-                inode = nnodey*(ix-1) + iy
-                self.coord.append((xx,yy,zz))
-                yy += dy
-            xx += dx
-            yy  = ystart
-
-        # create connectivity
-        self.conn   = []
-        for ix in range(1,nelemx+1):
-            for iy in range(1,nelemy+1):
-                # global element number
-                ielem = (ix-1)*nelemy + iy
-                # need to get lower left node (n1)
-                n1  =  (ix-1)*nnodey + iy
-                n2  = n1 + nnodey
-                n3  = n2 + 1
-                n4  = n1 + 1
-                self.conn.append([n1,n2,n3,n4,'linelas2dnumba'])
-
-        # add traction elements if necessary
-        if ( bctype == 'trac' ):
-            n1 = nnodey
-            n2 = n1 + nnodey
-            for ix in range(nelemx*nelemy+1,self.nelem+1):
-                # notice n1 and n2 is reversed; the order in which they are
-                # traversed should be the same as in the quad element order
-                self.conn.append([n2,n1,'linelastrac2d'])
-                n1 += nnodey
-                n2 += nnodey
-
-        # create properties
-        self.prop   = []; xmid = length/2.0; ymid = breadth/2.0; 
-        for x,y,z in self.coord:
-
-            if ( stf=='homogeneous'):
-                mu = self.stfmin ; lam = self.rnu*mu
-           
-            if ( stf=='inclusion'):
-                dist = (x-self.xcen)**2 + (y-self.ycen)**2
-                dist = dist**0.5
-                rad  = self.radius
-                mu   = self.stfmin; lam =self.rnu*mu
-                if ( dist <= rad ):
-                    mu = 5.0*self.stfmin; lam = self.rnu*mu;
-
-            if ( stf=='random'):
-                for [xcen,ycen],rad in zip(self.centers,self.radii):
-                    dist = (x-xcen)**2.0 + (y-ycen)**2.0
-                    dist = dist**0.5
-                    mu   = self.stfmin; lam = self.rnu*mu
-                    if ( dist <= rad):
-                        mu = 5.0*self.stfmin; lam = self.rnu*mu;
-                        
-            self.prop.append([lam,mu])
-        # create ideqn and dirichlet bc
-        self.ideqn  = [ [0]*self.ndofn for i in self.coord]
-        self.dirich = [ [0]*self.ndofn for i in self.coord]
-
-        # create lower boundary dirichlet condition
-        # first the x-condition on the first node
-        self.ideqn[0][0]  = -1;
-        self.dirich[0][0] = 0.0;
-        # then the y conditions on the lower boundary
-        for i in range(1,(self.nnodes-nnodey+1)+1,nnodey):
-            self.ideqn[i-1][1]  = -1
-            self.dirich[i-1][1] = 0.0
-
-        if (bctype == 'dirich'):
-            for i in range(nnodey,self.nnodes+1,nnodey):
-                self.ideqn[i-1][1]  = -1
-                self.dirich[i-1][1] = qdirich
-                # make the rest of the equation numbers
-
-        # must be called after all negative numbers are set
-        self.make_eqn_no(self.ideqn)
-        
-        self.bf   = [ [0]*self.ndofn for i in self.coord ]
-        self.pforce   = [ [0]*self.ndofn for i in self.coord ]
-        self.trac = [ [0]*self.ndofn for i in self.coord ]
-
-        if (bctype == 'trac'):
-            for i in range(nnodey,self.nnodes+1,nnodey):
-                self.trac[i-1][1] = qtrac
-
-        # dump out mu and lambda
-
     def create_mesh_2d(self,length=10.0,breadth=10.0,nelemx=10,nelemy=10,
                        stftype = 'homogeneous',bctype='dirich',
                        radii   = [1.0],
                        centers = [[5.0,5.0]],
                        mumin   = 1.0,
                        mumax   = 5.0,
-                       nu      = 0.25,
-                       nclassx=3,nclassy=3):
+                       nu      = 0.25
+                       ):
         
         assert (length > 0),'length has to be greater than 0'
         assert (breadth > 0),'breadth has to be greater than 0'
@@ -290,11 +133,8 @@ class FyPyMesh():
         self.rnu      = 2*nu/(1-2*nu)
         self.centers  = centers     # list of centers for inclusions
         self.radii    = radii  # list of radii   for inclusions
-        # self.radius   = radius
-        self.nclassx  = nclassx
-        self.nclassy  = nclassy
-        self.nclass   = nclassx*nclassy + 1
 
+        # values to use for bcs
         qdirich = -1
         qtrac   = -0.6
         

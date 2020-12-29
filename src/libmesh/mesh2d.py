@@ -9,8 +9,6 @@ if __name__ =='__main__':
                           mumin   = 11.0,
                           mumax   = 22.0,
                           nu      = 0.4,
-                          nclassx=1,
-                          nclassy=1
                          )
     mesh2d.write_mesh(filename='data.in')
     mesh2d.json_dump(filename='data.json.in')
