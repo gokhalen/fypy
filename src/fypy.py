@@ -10,7 +10,6 @@ class FyPy():
         self.fypymesh.json_read(self.args.inputfile)
 
     def assembly(self):
-        # profiling doesn't seem to work in class
         self.fassem = eval(f'assembly_{self.args.partype}')
         if ( self.args.profile == 'True'):
             cProfile.runctx('self.kk,self.rhs,self.reduction_time = self.fassem(self.fypymesh,self.args.nprocs,self.args.chunksize)',globals(),locals())

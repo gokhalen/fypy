@@ -31,7 +31,6 @@ if __name__ == '__main__':
         with tout:
             fypy.output()
             fypy.postprocess('0')
-            
 
     printtime(tpre=tpre.elapsed,tassem=tassem.elapsed,tsolve=tsolve.elapsed,
               tout=tout.elapsed,ttotal=ttotal.elapsed,treduc=reduction_time,

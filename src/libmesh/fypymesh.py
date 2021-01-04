@@ -127,7 +127,7 @@ class FyPyMesh():
         self.ninteg   = 3
         self.ndofn    = 2
         self.nprop    = 2
-        self.ndime    = 1
+        self.ndime    = 2
         self.mumin    = mumin
         self.mumax    = mumax
         self.rnu      = 2*nu/(1-2*nu)
