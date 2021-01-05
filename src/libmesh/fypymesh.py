@@ -334,7 +334,8 @@ class FyPyMesh():
         self.plotfield(self.coord, uy,         'uy', suffix=suffix)
         
     def plotfield(self,coord,field,fieldname,fmin=None,fmax=None,suffix=''):
-        
+        # do not try .reshape(self.nnodey,self.nnodex)
+        # if you want to switch dimensions, then take the transpose
         xx    = np.asarray(coord)[:,0].reshape(self.nnodex,self.nnodey)
         yy    = np.asarray(coord)[:,1].reshape(self.nnodex,self.nnodey)
         field = field.reshape(self.nnodex,self.nnodey) 
