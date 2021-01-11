@@ -1,8 +1,10 @@
 # A quick and dirty 1d,2d-mesh generator
 import os,sys,json;
 import numpy as np;
-import matplotlib.pyplot as plt
 import matplotlib as mpl
+ # https://stackoverflow.com/questions/45993879/matplot-lib-fatal-io-error-25-inappropriate-ioctl-for-device-on-x-server-loc See nanounanue's answer
+mpl.use('Agg')
+import matplotlib.pyplot as plt
 import random
 import pyvista as pv
 
