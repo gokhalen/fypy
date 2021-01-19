@@ -1,3 +1,6 @@
+1) Output strains
+
+
 5) Consider reducing indent in JSON. Might speed up diskio
 6) Downgrade VTK to 8.1.2 https://github.com/pyvista/pyvista/issues/1074 to fix PyVista in a script bug
   7) sanity checks on xcen,ycen and radius (check if less than grid spacing)
