@@ -6,9 +6,9 @@ if __name__ =='__main__':
                           stftype='inclusion',bctype='trac',
                           radii   = [1.0],
                           centers = [[1.0,2.5]],
-                          mumin   = 11.0,
-                          mumax   = 22.0,
-                          nu      = 0.4,
+                          mu      = 2.5,
+                          muback  = 1.0,
+                          nu      = 0.25,
                          )
     mesh2d.write_mesh(filename='data.in')
     mesh2d.json_dump(filename='data.json.in')

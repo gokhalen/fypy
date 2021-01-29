@@ -12,6 +12,9 @@ def getelem(elemname:str,ninteg,gdofn)->TOUTGETELM:
     if ( elemname == 'linelas2dnumba'):
         return LinElas2DNumba(ninteg=ninteg,gdofn=gdofn)
 
+    if ( elemname == 'linelas2dnumbasri'):
+        return LinElas2DNumbaSRI(ninteg=ninteg,gdofn=gdofn)
+
     if ( elemname == 'linelastrac2d'):
         return LinElasTrac2D(ninteg=ninteg,gdofn=gdofn)
 
