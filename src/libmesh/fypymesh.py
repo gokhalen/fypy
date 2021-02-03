@@ -9,7 +9,8 @@ import random
 import pyvista as pv
 
 class FyPyMesh():
-    stflist = ['homogeneous','inclusion','random']
+    stflist  = ['homogeneous','inclusion','random']
+    elemlist = ['linelas2d','linelas2dnumba','linelas2dnumbasri']
     
     def __init__(self,inputdir='',outputdir=''):
         if ( inputdir != '') and ( inputdir[-1] != '/'):
@@ -33,6 +34,13 @@ class FyPyMesh():
                     ieqnno +=1
 
         self.gdofn = ieqnno
+
+    def make_ideqnmass(self,ideqnmass):
+        # we need ideqn for computing strains
+        ieqnno = 0
+        for inode in range(0,self.nnodes):
+            ideqnmass[inode] = ieqnno
+            ieqnno +=1
 
     def create_mesh_1d(self,start=0.0,end=1.0,nelem=10,stf='homogeneous'):
         self.start    = start
@@ -73,9 +81,9 @@ class FyPyMesh():
             cc.append('linelas1d')
 
         
-        self.prop    = [ [self.stfmin] for i in self.coord ]
+        self.prop      = [ [self.stfmin] for i in self.coord ]
+        self.ideqn     = [ [0]*self.ndofn for i in self.coord]
 
-        self.ideqn   = [ [0]*self.ndofn for i in self.coord]
 
         # set the first and last ideqn to negative for dirichlet
         self.ideqn[0][0]  = -1
@@ -103,12 +111,14 @@ class FyPyMesh():
                        centers = [[5.0,5.0]],
                        mu      = 2.5,
                        muback  = 1.0,
-                       nu      = 0.25
+                       nu      = 0.25,
+                       eltype  = 'linelas2dnumba'
                        ):
         
         assert (length > 0),'length has to be greater than 0'
         assert (breadth > 0),'breadth has to be greater than 0'
         assert (len(radii)==len(centers)),'number of radii and centers are not equal'
+        assert (eltype in FyPyMesh.elemlist),'Unknown element specified'
         
         xstart  = 0.0; xend = xstart + length ; dx = length  / nelemx 
         ystart  = 0.0; yend = ystart + breadth; dy = breadth / nelemy
@@ -165,7 +175,7 @@ class FyPyMesh():
                 n2  = n1 + nnodey
                 n3  = n2 + 1
                 n4  = n1 + 1
-                self.conn.append([n1,n2,n3,n4,'linelas2dnumba'])
+                self.conn.append([n1,n2,n3,n4,eltype])
 
         # add traction elements if necessary
         if ( bctype == 'trac' ):
@@ -195,8 +205,9 @@ class FyPyMesh():
 
             self.prop.append([lam,mu])
         # create ideqn and dirichlet bc
-        self.ideqn  = [ [0]*self.ndofn for i in self.coord]
-        self.dirich = [ [0]*self.ndofn for i in self.coord]
+        self.ideqn      = [ [0]*self.ndofn for i in self.coord]
+        self.ideqnmass  = [ 0              for i in self.coord]
+        self.dirich     = [ [0]*self.ndofn for i in self.coord]
 
         # create lower boundary dirichlet condition
         # first the x-condition on the first node
@@ -215,6 +226,7 @@ class FyPyMesh():
 
         # must be called after all negative numbers are set
         self.make_eqn_no(self.ideqn)
+        self.make_ideqnmass(self.ideqnmass)
         
         self.bf   = [ [0]*self.ndofn for i in self.coord ]
         self.pforce   = [ [0]*self.ndofn for i in self.coord ]
@@ -276,6 +288,7 @@ class FyPyMesh():
                'conn':self.conn,
                'prop':self.prop,
                'ideqn':self.ideqn,
+               'ideqnmass':self.ideqnmass,
                'dirich':self.dirich,
                'bf':self.bf,
                'trac':self.trac,
@@ -322,18 +335,20 @@ class FyPyMesh():
     def preprocess(self,suffix):
         lam    = np.asarray(self.prop)[:,0]
         mu     = np.asarray(self.prop)[:,1]
-        stfmin = np.min([lam,mu]) ; stfmax = np.max([lam,mu])
         
-        self.plotfield(self.coord, lam,    'lambda', stfmin, stfmax, suffix=suffix)
-        self.plotfield(self.coord, mu,        'mu' , stfmin, stfmax, suffix=suffix)
+        stfminmu  = np.min(mu) ; stfmaxmu  = np.max(mu)
+        stfminlam = np.min(lam) ; stfmaxlam = np.max(lam)
+        
+        self.plotfield(self.coord, lam, 'lambda', stfminlam, stfmaxlam, suffix=suffix)
+        self.plotfield(self.coord, mu,  'mu' , stfminmu, stfmaxmu, suffix=suffix)
 
     def postprocess(self,suffix):
         
         ux  = np.asarray(self.solution)[:,0]
         uy  = np.asarray(self.solution)[:,1]
   
-        self.plotfield(self.coord, ux,         'ux', suffix=suffix)
-        self.plotfield(self.coord, uy,         'uy', suffix=suffix)
+        self.plotfield(self.coord, ux,'ux',suffix=suffix)
+        self.plotfield(self.coord, uy,'uy',suffix=suffix)
         
     def plotfield(self,coord,field,fieldname,fmin=None,fmax=None,suffix=''):
         # do not try .reshape(self.nnodey,self.nnodex)
@@ -348,6 +363,7 @@ class FyPyMesh():
         plt.colorbar()
         ax = plt.gca()
         ax.set_aspect('equal')
+        plt.tight_layout()
         plt.savefig(self.outputdir+fieldname+f'{suffix}.png')
         # without this close figure instances 'stay alive'
         # and multiple colorbars are drawn

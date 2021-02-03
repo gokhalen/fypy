@@ -27,6 +27,11 @@ if __name__ == '__main__':
         with tsolve:
             fypy.solve()
 
+        tstrain = Timer('FyPy: Strain Assembly timer',verbose=0)
+        with tstrain:
+            print('Calling assembly_strain')
+            fypy.assembly_strain()
+
         tout = Timer('Output timer',verbose=0)
         with tout:
             fypy.output()
@@ -34,6 +39,7 @@ if __name__ == '__main__':
 
     printtime(tpre=tpre.elapsed,tassem=tassem.elapsed,tsolve=tsolve.elapsed,
               tout=tout.elapsed,ttotal=ttotal.elapsed,treduc=reduction_time,
+              tstrain=tstrain.elapsed,
               digits=3)
     goodbye()
 

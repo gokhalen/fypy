@@ -18,6 +18,9 @@ def integrate_parent(finteg:Callable,gauss:Iterable,shape:Iterable,data:Iterable
     # jac   : Iterable yielding Jacobian namedtuple for each integration point
 
     # wtjac is not passed to finteg because it does not need it to evaluate functions
+
+    # Feb 3 2021
+    # gausspts are passed to the finteg callable, but it seems they're not used in most cases
     
     funcgauss = map(finteg,gauss.pts,shape,jac,data)
     

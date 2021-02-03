@@ -163,4 +163,30 @@ class LinElas2D(ElemBase):
     def rhs_point_force(self):
         return self.pforce.reshape(self.edofn)
 
+    def mass_kernel(self,gausspts,shape,jaco,prop):
+        N1,N2,N3,N4 = shape.shape
+        mm = np.zeros(self.elnodes*self.elnodes).reshape(self.elnodes,self.elnodes)
+        
+        mm[0][0] = N1*N1
+        mm[0][1] = N1*N2
+        mm[0][2] = N1*N3
+        mm[0][3] = N1*N4
+
+        mm[1][0] = mm[0][1]
+        mm[1][1] = N2*N2
+        mm[1][2] = N2*N3
+        mm[1][3] = N2*N4
+        
+        mm[2][0] = mm[0][2]
+        mm[2][1] = mm[1][2]
+        mm[2][2] = N3*N3
+        mm[2][3] = N3*N4
+
+        mm[3][0] = mm[0][3]
+        mm[3][1] = mm[1][3]
+        mm[3][2] = mm[2][3]
+        mm[3][3] = N4*N4
+        
+        return mm
+
         

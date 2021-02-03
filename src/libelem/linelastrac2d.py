@@ -13,6 +13,10 @@ class LinElasTrac2D(ElemBase):
         super().__init__(ninteg=ninteg,gdofn=gdofn)
 
     def stiffness_kernel(self,gausspts,shape,jaco,prop):
+        # this returns a zero matrix of shape (4,4)
+        # this is made one dimensional by raveling in create_global_Kf and appended to the matrix list
+        # this (4,4) matrix is not added to the (8,8) matrix coming from the stiffness_kernel
+        # of LinElas2D
         return np.zeros(self.edofn*self.edofn).reshape(self.edofn,self.edofn)
      
     def rhs_bf_kernel(self,gausspts,shape,jaco,bf):
@@ -32,5 +36,9 @@ class LinElasTrac2D(ElemBase):
 
     def rhs_point_force(self):
         return np.zeros(self.edofn)
+
+    def mass_kernel(self,gausspts,shape,jaco,prop):
+        # see notes in stiffness_kernel
+        return np.zeros(self.elnodes*self.elnodes).reshape(self.elnodes,self.elnodes)
 
     

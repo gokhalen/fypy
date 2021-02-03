@@ -30,6 +30,8 @@ class ElemBase():
         self.erhstrac   = np.zeros(self.edofn)                                                    # rhs vector for traction data
         self.erhspf     = np.zeros(self.edofn)
 
+        self.emass      = np.zeros(self.elnodes*self.elnodes).reshape(self.elnodes,self.elnodes)
+
         # we don't really need to initialize these values, we can just check in the setter and getter
         # self._coord     = np.zeros(self.elnodes*3).reshape(self.elnodes,3)                        # coordinates
         # self._prop      = np.zeros(self.elnodes*self.nprop).reshape(self.elnodes,self.nprop)      # stiffness property
@@ -135,6 +137,27 @@ class ElemBase():
         assert (x.shape == (self.elnodes,self.nprop)),msg
         self._prop = x
 
+
+    @property
+    def solution(self):
+        return self._solution
+
+    @solution.setter
+    def solution(self,x):
+        msg = f'In elembase.py solution not of the right shape, expected ({self.elnodes},{self.elndofn}) got {x.shape}'
+        assert (x.shape == (self.elnodes,self.elndofn)),msg
+        self._solution = x
+
+    @property
+    def ideqnmass(self):
+        return self._ideqnmass
+    
+    @ideqnmass.setter
+    def ideqnmass(self,x):
+        msg = f'In elembase.py solution not of the right shape, expected ({self.elnodes},) got {x.shape}'
+        assert (x.shape == (self.elnodes,)),msg
+        self._ideqnmass = x
+
     def interp(self):
         self.propinterp = interp_parent(self.prop,self.ss)   # interpolate material properties at integration points
         self.bfinterp   = interp_parent(self.bf,self.ss)     # interpolate body force
@@ -166,14 +189,31 @@ class ElemBase():
 
         self.erhs = self.erhsbf + self.erhsdir + self.erhstrac + self.erhspf
 
-    def setdata(self,coord=None,prop=None,bf=None,pforce=None,dirich=None,trac=None,ideqn=None):
-        self.coord  = coord;
-        self.prop   = prop
-        self.bf     = bf
-        self.pforce = pforce
-        self.dirich = dirich
-        self.trac   = trac
-        self.ideqn  = ideqn
+
+    def compute_mass(self):
+        rho = [1.0]*len(self.gg.pts)
+        self.getjaco()
+        self.emass = integrate_parent(self.mass_kernel,self.gg,self.ss,rho,self.jj)
+        self.mdata = self.emass.ravel(order='C')
+        row,col = np.indices((self.elnodes,self.elnodes))
+        row = row.ravel(order='C')
+        col = col.ravel(order='C')
+        self.mrow = self.ideqnmass[row]
+        self.mcol = self.ideqnmass[col]
+
+
+    def setdata(self,coord=None,prop=None,bf=None,pforce=None,dirich=None,
+                trac=None,ideqn=None,ideqnmass=None,solution=None):
+        if (coord     is not None): self.coord     = coord
+        if (prop      is not None): self.prop      = prop
+        if (bf        is not None): self.bf        = bf
+        if (pforce    is not None): self.pforce    = pforce
+        if (dirich    is not None): self.dirich    = dirich
+        if (trac      is not None): self.trac      = trac
+        if (ideqn     is not None): self.ideqn     = ideqn 
+        if (solution  is not None): self.solution  = solution
+        if (ideqnmass is not None): self.ideqnmass = ideqnmass
+
 
     def create_global_Kf(self):
         # efficient version using numpy
