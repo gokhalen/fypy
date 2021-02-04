@@ -30,7 +30,13 @@ if __name__ == '__main__':
         tstrain = Timer('FyPy: Strain Assembly timer',verbose=0)
         with tstrain:
             print('Calling assembly_strain')
-            fypy.assembly_strain()
+            fypy.assembly_str()
+
+
+        tstrainsolve = Timer('FyPy: Strain Solver timer',verbose=0)
+        with tstrainsolve:
+            print('Calling solve_strain')
+            fypy.solve_strain()
 
         tout = Timer('Output timer',verbose=0)
         with tout:

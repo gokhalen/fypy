@@ -41,4 +41,18 @@ class LinElasTrac2D(ElemBase):
         # see notes in stiffness_kernel
         return np.zeros(self.elnodes*self.elnodes).reshape(self.elnodes,self.elnodes)
 
+
+    def make_strains(self,solution,ss):
+        # from nodal displacements compute strains at every integration point
+        nn  = self.ninteg
+        exx = np.zeros((nn,),dtype='float64')
+        eyy = np.zeros((nn,),dtype='float64')
+        exy = np.zeros((nn,),dtype='float64')
+        return (exx,eyy,exy)
+
+    def strain_kernel(self,gausspts,shape,jaco,prop):
+        # see notes is stiffness_kernel
+        rhs = np.zeros((self.elnodes,),dtype='float64')
+        return rhs
+
     

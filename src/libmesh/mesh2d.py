@@ -2,7 +2,7 @@ from fypymesh import *
 
 if __name__ =='__main__':
     mesh2d = FyPyMesh()
-    mesh2d.create_mesh_2d(length=2.0,breadth=2.0,nelemx=4,nelemy=4,
+    mesh2d.create_mesh_2d(length=2.0,breadth=2.0,nelemx=2,nelemy=2,
                           stftype='homogeneous',bctype='trac',
                           radii   = [1.0],
                           centers = [[1.0,2.5]],

@@ -162,6 +162,7 @@ class ElemBase():
         self.propinterp = interp_parent(self.prop,self.ss)   # interpolate material properties at integration points
         self.bfinterp   = interp_parent(self.bf,self.ss)     # interpolate body force
         self.tracinterp = interp_parent(self.trac,self.ss)   # interp traction
+
         
     def getjaco(self):
         fjaco = eval(f'jaco{self.ndime}d')
@@ -190,8 +191,9 @@ class ElemBase():
         self.erhs = self.erhsbf + self.erhsdir + self.erhstrac + self.erhspf
 
 
-    def compute_mass(self):
-        rho = [1.0]*len(self.gg.pts)
+    def compute_mass_and_strain_forc(self):
+        # compute mass matrix
+        rho = [1.0]*len(self.gg.pts)  # fake data at every integration point
         self.getjaco()
         self.emass = integrate_parent(self.mass_kernel,self.gg,self.ss,rho,self.jj)
         self.mdata = self.emass.ravel(order='C')
@@ -200,6 +202,14 @@ class ElemBase():
         col = col.ravel(order='C')
         self.mrow = self.ideqnmass[row]
         self.mcol = self.ideqnmass[col]
+        # compute the forcing for strain computation
+        exx,eyy,exy=self.make_strains(self.solution,self.jj)
+        self.exxrhs=integrate_parent(self.strain_kernel,self.gg,self.ss,exx,self.jj).ravel(order='C')
+        self.eyyrhs=integrate_parent(self.strain_kernel,self.gg,self.ss,eyy,self.jj).ravel(order='C')
+        self.exyrhs=integrate_parent(self.strain_kernel,self.gg,self.ss,exy,self.jj).ravel(order='C')
+        self.strainrow = self.ideqnmass
+        self.straincol = [0]*self.elnodes
+        
 
 
     def setdata(self,coord=None,prop=None,bf=None,pforce=None,dirich=None,

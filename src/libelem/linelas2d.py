@@ -189,4 +189,37 @@ class LinElas2D(ElemBase):
         
         return mm
 
+    def make_strains(self,solution,jj):
+        # from nodal displacements compute strains at every integration point
+        nn  = self.ninteg*self.ninteg
+        exx = np.zeros((nn,),dtype='float64')
+        eyy = np.zeros((nn,),dtype='float64')
+        exy = np.zeros((nn,),dtype='float64')
+        ux  = solution[:,0]
+        uy  = solution[:,1]
+        gder = [j.gder for j in jj]
+
+        for ii in range(nn):
+            exx[ii] = ux[0]*gder[ii][0][0] + ux[1]*gder[ii][1][0] + ux[2]*gder[ii][2][0] + ux[3]*gder[ii][3][0]
+            eyy[ii] = uy[0]*gder[ii][0][1] + uy[1]*gder[ii][1][1] + uy[2]*gder[ii][2][1] + uy[3]*gder[ii][3][1]
+            exy[ii] = ux[0]*gder[ii][0][1] + ux[1]*gder[ii][1][1] + ux[2]*gder[ii][2][1] + ux[3]*gder[ii][3][1] + \
+                      uy[0]*gder[ii][0][0] + uy[1]*gder[ii][1][0] + uy[2]*gder[ii][2][0] + uy[3]*gder[ii][3][0]
+
+            exy[ii] = 0.5*exy[ii]
+
+        return (exx,eyy,exy)
+
+
+    def strain_kernel(self,gausspts,shape,jaco,prop):
+        rhs = np.zeros((4,),dtype='float64')
+        N1,N2,N3,N4 = shape.shape
+        rhs[0] = N1*prop
+        rhs[1] = N2*prop
+        rhs[2] = N3*prop
+        rhs[3] = N4*prop
+        return rhs
+
+
+
+
         
