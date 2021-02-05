@@ -19,9 +19,9 @@ class FyPy():
 
     def assembly_str(self):
         if ( self.args.profile == 'True'):
-            cProfile.runctx('self.mm,self.fexx,self.feyy,self.fexy,self.reduction_time = assembly_strain(self.fypymesh,self.args.nprocs,self.args.chunksize)',globals(),locals())
+            cProfile.runctx('self.mm,self.fexx,self.feyy,self.fexy,self.reduction_strain = assembly_strain(self.fypymesh,self.args.nprocs,self.args.chunksize)',globals(),locals())
         else:
-            self.mm,self.fexx,self.feyy,self.fexy,self.reduction_time = assembly_strain(self.fypymesh,self.args.nprocs,self.args.chunksize)
+            self.mm,self.fexx,self.feyy,self.fexy,self.reduction_strain = assembly_strain(self.fypymesh,self.args.nprocs,self.args.chunksize)
 
 
     def solve(self,method='bicg'):
@@ -31,11 +31,26 @@ class FyPy():
 
 
     def solve_strain(self):
-        solver = FyPySolver(self.mm,self.fexx)
+        # exx
+        solver   = FyPySolver(self.mm,self.fexx)
         self.exx = solver.solve(self.args.solvertype)
-        print('fypy.py: exx in solve_strain...')
-        print(self.exx)
+        self.fypymesh.exx = self.exx
+        
+        # eyy
+        solver   = FyPySolver(self.mm,self.feyy)
+        self.eyy = solver.solve(self.args.solvertype)
+        self.fypymesh.eyy = self.eyy
 
+        # eyy
+        solver   = FyPySolver(self.mm,self.fexy)
+        self.exy = solver.solve(self.args.solvertype)
+        self.fypymesh.exy = self.exy
+        
+        #print('fypy.py: exx in solve_strain...')
+        #print(self.exx)
+        #print(self.eyy)
+        #print(self.exy)
+        
     def output(self):
         self.fypymesh.make_output(self.args.outputfile)
 
@@ -46,6 +61,7 @@ class FyPy():
         self.fypymesh.postprocess(suffix)
         # Causes issue when running inside a script
         # 'maximum number of clients reachedFatal Python error: Segmentation fault'
+        # solution is to downgrade vtk
         # self.fypymesh.postprocess_pv(suffix)
 
     def doeverything(self,suffix):

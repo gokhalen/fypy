@@ -112,7 +112,8 @@ class FyPyMesh():
                        mu      = 2.5,
                        muback  = 1.0,
                        nu      = 0.25,
-                       eltype  = 'linelas2dnumba'
+                       eltype  = 'linelas2dnumba',
+                       bcmag   = -0.06
                        ):
         
         assert (length > 0),'length has to be greater than 0'
@@ -147,8 +148,8 @@ class FyPyMesh():
         self.radii    = radii  # list of radii   for inclusions
 
         # values to use for bcs
-        qdirich = -1
-        qtrac   = -0.6
+        qdirich = bcmag
+        qtrac   = bcmag
         
         # node numbers increase by 1 in the y direction by nodey in the x-direction
         # node numbers are defined implicitly.
@@ -322,8 +323,16 @@ class FyPyMesh():
         # output the solution only
         # rest can be picked up from input file
         
-        sollist = [ list(ss) for ss in self.solution]
-        dd = {'solution':sollist}
+        sollist = [ list(ss) for ss in self.solution ]
+        exxlist = list(self.exx)
+        eyylist = list(self.eyy) 
+        exylist = list(self.exy)         
+
+        dd = {'solution':sollist,
+              'exx':exxlist,
+              'eyy':eyylist,
+              'exy':exylist
+             }
 
         with open(self.outputdir+outfile,'w') as fout:
             json.dump(dd,fout,indent=4)
@@ -339,17 +348,34 @@ class FyPyMesh():
         stfminmu  = np.min(mu) ; stfmaxmu  = np.max(mu)
         stfminlam = np.min(lam) ; stfmaxlam = np.max(lam)
         
-        self.plotfield(self.coord, lam, 'lambda', stfminlam, stfmaxlam, suffix=suffix)
-        self.plotfield(self.coord, mu,  'mu' , stfminmu, stfmaxmu, suffix=suffix)
+        self.plotfield(self.coord, lam, 'lambda', stfminlam, stfmaxlam, suffix=suffix+'_fypy')
+        self.plotfield(self.coord, mu,  'mu' , stfminmu, stfmaxmu, suffix=suffix+'_fypy')
 
     def postprocess(self,suffix):
         
         ux  = np.asarray(self.solution)[:,0]
         uy  = np.asarray(self.solution)[:,1]
+        exx = np.asarray(self.exx)
+        eyy = np.asarray(self.eyy)
+        exy = np.asarray(self.exy)
   
-        self.plotfield(self.coord, ux,'ux',suffix=suffix)
-        self.plotfield(self.coord, uy,'uy',suffix=suffix)
+        self.plotfield(self.coord, ux, 'ux', suffix=suffix+'_fypy')
+        self.plotfield(self.coord, uy, 'uy', suffix=suffix+'_fypy')
+
+        # adjust the scale on the strain plots so that the
+        # spurious strain on the fixed node is not seen
+        # the maximum scale has to be pushed towards +infty
+        # the minimum scale has to be pused towards  -infty
+        ftol   = 0.00001
+        exxmin = np.min(exx)-ftol; exxmax = np.max(exx)+ftol;
+        eyymin = np.min(eyy)-ftol; eyymax = np.max(eyy)+ftol;
+        exymin = np.min(exy)-ftol; exymax = np.max(exy)+ftol;
+
         
+        self.plotfield(self.coord, exx,'exx',fmin=exxmin,fmax=exxmax,suffix=suffix+'_fypy')
+        self.plotfield(self.coord, eyy,'eyy',fmin=eyymin,fmax=eyymax,suffix=suffix+'_fypy')
+        self.plotfield(self.coord, exy,'exy',fmin=exymin,fmax=exymax,suffix=suffix+'_fypy')
+            
     def plotfield(self,coord,field,fieldname,fmin=None,fmax=None,suffix=''):
         # do not try .reshape(self.nnodey,self.nnodex)
         # if you want to switch dimensions, then take the transpose
@@ -358,9 +384,10 @@ class FyPyMesh():
         field = field.reshape(self.nnodex,self.nnodey) 
 
         plt.figure(fieldname)
-        plt.pcolormesh(xx,yy,field,vmin=fmin,vmax=fmax)
-        plt.title(fieldname)
+        plt.pcolormesh(xx,yy,field)
+        plt.clim([fmin,fmax])
         plt.colorbar()
+        plt.title(fieldname)
         ax = plt.gca()
         ax.set_aspect('equal')
         plt.tight_layout()

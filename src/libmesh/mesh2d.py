@@ -2,14 +2,15 @@ from fypymesh import *
 
 if __name__ =='__main__':
     mesh2d = FyPyMesh()
-    mesh2d.create_mesh_2d(length=2.0,breadth=2.0,nelemx=2,nelemy=2,
+    mesh2d.create_mesh_2d(length=1.0,breadth=1.5,nelemx=64,nelemy=96,
                           stftype='homogeneous',bctype='trac',
                           radii   = [1.0],
                           centers = [[1.0,2.5]],
                           mu      = 2.5,
                           muback  = 1.0,
                           nu      = 0.49,
-                          eltype  = 'linelas2dnumbasri'
+                          eltype  = 'linelas2dnumbasri',
+                          bcmag   = -0.06
                          )
     mesh2d.write_mesh(filename='data.in')
     mesh2d.json_dump(filename='data.json.in')
