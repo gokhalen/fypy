@@ -6,7 +6,8 @@ import numpy as np
 # will need changing data structures of arguments
 
 # NOTE: specifying data types speeds up Numba compilation time dramatically
-@nb.njit((nb.none)(nb.int64,nb.float64[:],nb.float64[:,:],nb.float64[:,:,:],nb.float64[:],nb.float64[:,:],nb.float64[:,:]),fastmath=True)
+@nb.njit((nb.none)(nb.int64,nb.float64[:],nb.float64[:,:],nb.float64[:,:,:],nb.float64[:],nb.float64[:,:],nb.float64[:,:])
+         ,fastmath=True)
 def compute_stiffness_nb_sri(ninteg,ggwts,ss,gder,jdet,prop,kk):
     DBb = np.zeros(6,dtype=nb.float64).reshape(3,2)
     BDB = np.zeros(4,dtype=nb.float64).reshape(2,2)
@@ -17,7 +18,7 @@ def compute_stiffness_nb_sri(ninteg,ggwts,ss,gder,jdet,prop,kk):
 
     for isri in range(2):
 
-        # define integration points for reduced
+        # define integration points for reduced integration
         if ( isri == 0):
             _ninteg = 1
         if ( isri == 1):
@@ -102,6 +103,42 @@ def compute_stiffness_nb_sri(ninteg,ggwts,ss,gder,jdet,prop,kk):
                                 kk[ieqn][jeqn] += BDB[iii-1][jjj-1]
                                 if ( jeqn != ieqn ):
                                     kk[jeqn][ieqn] += BDB[iii-1][jjj-1]
+
+
+# compute_mass_nb                                    
+@nb.njit((nb.none)(nb.int64,                # ninteg
+                   nb.float64[:],           # ggwts
+                   nb.float64[:,:],         # shape (ss)
+                   nb.float64[:,:,:],       # gder 
+                   nb.float64[:],           # jdet
+                   nb.float64[:,:],         # solution
+                   nb.float64[:,:],         # mm
+                   nb.float64[:],           # exxrhs
+                   nb.float64[:],           # eyyrhs
+                   nb.float64[:]            # exyrhs
+                   ),fastmath=True)
+def compute_mass_nb(ninteg,ggwts,ss,gder,jdet,sol,mm,exxrhs,eyyrhs,exyrhs):
+    
+    for iinte in range(ninteg*ninteg):
+        wtjac=jdet[iinte]*ggwts[iinte]
+        # make strains at this integration point
+        exx = sol[0][0]*gder[iinte][0][0] + sol[1][0]*gder[iinte][1][0] + sol[2][0]*gder[iinte][2][0] + sol[3][0]*gder[iinte][3][0]
+        eyy = sol[0][1]*gder[iinte][0][1] + sol[1][1]*gder[iinte][1][1] + sol[2][1]*gder[iinte][2][1] + sol[3][1]*gder[iinte][3][1]
+        
+        exy = sol[0][0]*gder[iinte][0][1] + sol[1][0]*gder[iinte][1][1] + sol[2][0]*gder[iinte][2][1] + sol[3][0]*gder[iinte][3][1] + \
+              sol[0][1]*gder[iinte][0][0] + sol[1][1]*gder[iinte][1][0] + sol[2][1]*gder[iinte][2][0] + sol[3][1]*gder[iinte][3][0]
+        
+        exy = 0.5*exy
+
+        
+        for inode in range(4):
+            exxrhs[inode] += ss[iinte][inode]*exx*wtjac
+            eyyrhs[inode] += ss[iinte][inode]*eyy*wtjac
+            exyrhs[inode] += ss[iinte][inode]*exy*wtjac
+            for jnode in range(4):
+                mm[inode][jnode] += ss[iinte][inode]*ss[iinte][jnode]*wtjac
+
+
 
 
 
