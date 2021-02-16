@@ -109,7 +109,7 @@ class FyPyMesh():
                        stftype = 'homogeneous',bctype='dirich',
                        radii   = [1.0],
                        centers = [[5.0,5.0]],
-                       mu      = 2.5,
+                       mu      = [2.5],
                        muback  = 1.0,
                        nu      = 0.25,
                        eltype  = 'linelas2dnumba',
@@ -195,16 +195,17 @@ class FyPyMesh():
 
             if ( stftype=='homogeneous'):
                 mu = self.muback ; lam = self.rnu*mu
+                self.prop.append([lam,mu])
            
             if ( stftype=='inclusion'):
-                for [xcen,ycen],rad in zip(self.centers,self.radii):
+                mu   = self.muback; lam =self.rnu*self.muback
+                for [xcen,ycen],rad,muinc in zip(self.centers,self.radii,self.mu):
                     dist = (x-xcen)**2 + (y-ycen)**2
                     dist = dist**0.5
-                    mu   = self.muback; lam =self.rnu*self.muback
                     if ( dist <= rad ):
-                        mu = self.mu; lam = self.rnu*self.mu;
+                        mu = muinc; lam = self.rnu*muinc;
+                self.prop.append([lam,mu])
 
-            self.prop.append([lam,mu])
         # create ideqn and dirichlet bc
         self.ideqn      = [ [0]*self.ndofn for i in self.coord]
         self.ideqnmass  = [ 0              for i in self.coord]
