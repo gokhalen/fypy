@@ -2,10 +2,20 @@
 __pycache__/
 *.py[cod]
 *$py.class
+
+# TeX related
 *.png
+*.bbl
+*.blg
+*.log
+*.out
+*.pdf
+*.aux
+
 
 # Emacs backup files
 *~*
+*#*
 
 # C extensions
 *.so

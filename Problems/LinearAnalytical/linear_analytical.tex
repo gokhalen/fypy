@@ -1,0 +1,65 @@
+% Six results 2 - Excellent, 2 Good, 2 Bad. For softplus show halos
+% Mention adding more noise
+% Use only active voice. 
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+% to break urls: https://tex.stackexchange.com/questions/115690/urls-in-bibliography-latex-not-breaking-line-as-expected
+\newcommand{\beq}{\begin{equation}}
+\newcommand{\eeq}{\end{equation}}
+\newcommand{\ber}{\begin{eqnarray}}
+\newcommand{\eer}{\end{eqnarray}}
+\newcommand{\dd}[2]{\frac{d}{d{#2}}{(#1)} }
+\newcommand{\pdd}[2]{\frac{\partial{{#1}}}{\partial{#2}}}
+\begin{document}
+% bib
+\title{Analytical solution for linear elasticity}
+\date{\today}
+\author{Nachiket Gokhale}
+\maketitle
+\section{Introduction}
+Consider a 3D rectangular elastic domain, infinite in the z-direction thus yielding a plane strain problem. The domain is  $[0,L_x]\times[0,L_y]\times(-\infty,\infty)$, with traction free sides, traction specified on the top surface i.e. $\sigma\cdot{\mathbf{n}}=(0,h_y,0)$ on top surface, $u_x(0,0)=0,u_y(0,0)=0$ and $u_y(0,L_x)=0$. Assume a solution
+\beq
+u_x=ax \qquad u_y = by \qquad u_z = 0\,\, \text{plane strain}
+\eeq
+This gives
+\beq
+\epsilon = \begin{pmatrix}a & 0 & 0 \\ 0 & b & 0 \\ 0 & 0 & 0 \end{pmatrix}
+\eeq
+and,
+\ber
+\sigma &=& \lambda\text{tr}(\epsilon)\begin{pmatrix}1 & 0 & 0\\ 0 & 1 & 0\\0 & 0 & 1\end{pmatrix} + 2\mu\epsilon \\
+  &=& \lambda(a+b)\begin{pmatrix}1 & 0 & 0\\ 0 & 1 & 0\\0 & 0 & 1\end{pmatrix} +  2\mu\begin{pmatrix}a & 0 & 0 \\ 0 & b & 0 \\ 0 & 0 & 0 \end{pmatrix} \\
+  &=& \begin{pmatrix}\lambda(a+b)+2\mu{a} & 0 & 0 \\ 0 & \lambda(a+b)+2\mu{b} &0 \\ 0 & 0 & 0\end{pmatrix}  \\
+  &=& \begin{pmatrix} (\lambda+2\mu)a + \lambda{b}& 0 & 0\\0 & \lambda{a} + (\lambda+2\mu)b &0 \\ 0 & 0 & 0 \end{pmatrix} 
+      \eer
+      
+      
+% spurious indentation going on here
+ Traction free sides implies
+      \ber
+      \sigma\cdot\begin{pmatrix}1 \\ 0 \\ 0\end{pmatrix} &=& 0 \implies      (\lambda+2\mu)a + \lambda{b}=0 \\
+      a &=& -\frac{\lambda}{(\lambda+2\mu)}b \label{eqn:defa}
+      \eer
+
+      Traction condition on the top
+      \ber
+      \sigma\cdot\begin{pmatrix}0\\1\\0\end{pmatrix} = \begin{pmatrix}0\\h_y\\0\end{pmatrix} \implies \lambda{a} + (\lambda+2\mu)b = h_y
+        \eer
+
+        using equation (\ref{eqn:defa}) in the above equation
+
+        \ber
+        \frac{-\lambda^2b}{(\lambda+2\mu)} + (\lambda+2\mu)b &=& h_y \\
+        (-\lambda^2 + (\lambda+2\mu)^2)b &=& h_y(\lambda+2\mu)\\
+        (-\lambda^2 + \lambda^2 + 4\lambda\mu + 4\mu^2)b &=& h_y(\lambda+2\mu)\\
+        4\mu(\lambda+\mu)b &=& h_y(\lambda+2\mu)
+        b = h_y\frac{(\lambda+2\mu)}{4\mu(\lambda+\mu)}
+        \eer
+
+        To summarize
+        \beq
+        b = h_y\frac{(\lambda+2\mu)}{4\mu(\lambda+\mu)} \qquad  a = -\frac{\lambda}{(\lambda+2\mu)}b 
+        \eeq
+        
+\end{document}
