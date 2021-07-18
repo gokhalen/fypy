@@ -68,7 +68,7 @@ class ElemBase():
 
         # if all entries are less than zero, then boolcmp is true
         boolcmp = np.all( x < 0 )
-        assert (not boolcmp),'All entries in ideqn are less than zero'
+        assert (not boolcmp),f'All entries in ideqn are less than zero: self.elnodes={self.elnodes}'
         
         self._ideqn = x
 
