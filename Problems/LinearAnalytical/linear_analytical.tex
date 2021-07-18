@@ -63,8 +63,13 @@ and,
         \eeq
         %
 \section{Shear problem}        
-Consider a 3D rectangular elastic domain, infinite in the z-direction thus yielding a plane strain problem. The domain is  $[0,L_x]\times[0,L_y]\times(-\infty,\infty)$, with traction free sides, traction specified on the top surface i.e. $\sigma\cdot{\mathbf{n}}=(h_x,0
-
-,0)$ on top surface, $u_x(0,0)=0,u_y(0,0)=0$ and $u_x(x,0)=0$.
-
+Consider a 3D rectangular elastic domain, infinite in the z-direction thus yielding a plane strain problem. The domain is  $[0,L_x]\times[0,L_y]\times(-\infty,\infty)$. Assume the displacement field in the domain to be
+\beq
+u_x = ay \qquad u_y = bx \qquad u_z = 0
+\eeq
+The strain tensor and stress tensor are
+\ber
+\epsilon = \begin{pmatrix}0 & 0.5(a+b) & 0\\ 0.5(a+b) & 0 & 0 \\ 0 & 0 & 0\end{pmatrix}\\  \, \sigma = 2\mu\epsilon = \begin{pmatrix}0 & \mu(a+b) & 0\\ \mu(a+b) & 0 & 0 \\ 0 & 0 & 0\end{pmatrix}  
+\eer
+Since stress tensor is a constant, the equations of equilibrium are satisfied. We can use this stress tensor to compute what the traction should be on the faces, if one wanted to impose traction boundary conditions. 
 \end{document}
