@@ -1,5 +1,7 @@
 # fypy: A Python3 based 2D linear elasticity finite element code
 
+THERE IS NO WARRANTY FOR FYPY.
+
 Dependencies: numpy, numba, scipy, json, timerit and multiprocessing
 
 To test the code, do the following:

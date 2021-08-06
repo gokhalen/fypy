@@ -193,11 +193,11 @@ class FyPyMesh():
         self.prop   = []; xmid = length/2.0; ymid = breadth/2.0; 
         for x,y,z in self.coord:
 
-            if ( stftype=='homogeneous'):
+            if ( stftype == 'homogeneous'):
                 mu = self.muback ; lam = self.rnu*mu
                 self.prop.append([lam,mu])
            
-            if ( stftype=='inclusion'):
+            if ( stftype == 'inclusion'):
                 mu   = self.muback; lam =self.rnu*self.muback
                 for [xcen,ycen],rad,muinc in zip(self.centers,self.radii,self.mu):
                     dist = (x-xcen)**2 + (y-ycen)**2
@@ -205,6 +205,37 @@ class FyPyMesh():
                     if ( dist <= rad ):
                         mu = muinc; lam = self.rnu*muinc;
                 self.prop.append([lam,mu])
+
+            # creates a cross at the center
+            if ( stftype == 'cross'):
+                mu = self.muback; lam = self.rnu*self.muback
+                _cross_height = self.breadth*0.7
+                _cross_length = self.length*0.7
+                _cross_thick  = 0.2*min(self.length,self.breadth)
+                _cross_cenx   = self.length/2.0
+                _cross_ceny   = self.breadth/2.0
+
+                # limits of horizontal rectangle
+                xmin = _cross_cenx - (_cross_length/2.0)
+                xmax = _cross_cenx + (_cross_length/2.0)
+                ymin = _cross_ceny - (_cross_thick/2.0)
+                ymax = _cross_ceny + (_cross_thick/2.0)
+
+                if (x <= xmax) and (x >= xmin) and (y <= ymax) and (y >= ymin):
+                    mu = 4.0; lam = self.rnu*mu
+
+                # liits of horizontal rectangle
+                xmin = _cross_cenx - (_cross_thick/2.0)
+                xmax = _cross_cenx + (_cross_thick/2.0)
+                ymin = _cross_ceny - (_cross_height/2.0)
+                ymax = _cross_ceny + (_cross_height/2.0)
+
+                if (x <= xmax) and (x >= xmin) and (y <= ymax) and (y >= ymin):
+                    mu = 4.0; lam = self.rnu*mu
+                
+                self.prop.append([lam,mu])
+                
+                pass
 
         # create ideqn and dirichlet bc
         self.ideqn      = [ [0]*self.ndofn for i in self.coord]
