@@ -30,8 +30,8 @@ and,
 \ber
 \sigma &=& \lambda\text{tr}(\epsilon)\begin{pmatrix}1 & 0 & 0\\ 0 & 1 & 0\\0 & 0 & 1\end{pmatrix} + 2\mu\epsilon \\
   &=& \lambda(a+b)\begin{pmatrix}1 & 0 & 0\\ 0 & 1 & 0\\0 & 0 & 1\end{pmatrix} +  2\mu\begin{pmatrix}a & 0 & 0 \\ 0 & b & 0 \\ 0 & 0 & 0 \end{pmatrix} \\
-  &=& \begin{pmatrix}\lambda(a+b)+2\mu{a} & 0 & 0 \\ 0 & \lambda(a+b)+2\mu{b} &0 \\ 0 & 0 & 0\end{pmatrix}  \\
-  &=& \begin{pmatrix} (\lambda+2\mu)a + \lambda{b}& 0 & 0\\0 & \lambda{a} + (\lambda+2\mu)b &0 \\ 0 & 0 & 0 \end{pmatrix} 
+  &=& \begin{pmatrix}\lambda(a+b)+2\mu{a} & 0 & 0 \\ 0 & \lambda(a+b)+2\mu{b} &0 \\ 0 & 0 & \lambda(a+b)\end{pmatrix}  \\
+  &=& \begin{pmatrix} (\lambda+2\mu)a + \lambda{b}& 0 & 0\\0 & \lambda{a} + (\lambda+2\mu)b &0 \\ 0 & 0 & \lambda(a+b) \end{pmatrix} 
       \eer
       
       
@@ -62,6 +62,7 @@ and,
         b = h_y\frac{(\lambda+2\mu)}{4\mu(\lambda+\mu)} \qquad  a = -\frac{\lambda}{(\lambda+2\mu)}b 
         \eeq
         %
+Note: Plane strain is \textit{not} uniaxial tension. There is axial stress in the infinite direction.      
 \section{Shear problem}        
 Consider a 3D rectangular elastic domain, infinite in the z-direction thus yielding a plane strain problem. The domain is  $[0,L_x]\times[0,L_y]\times(-\infty,\infty)$. Assume the displacement field in the domain to be
 \beq
